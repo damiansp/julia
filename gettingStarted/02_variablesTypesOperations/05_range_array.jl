@@ -28,3 +28,43 @@ println(ndims(arr))
 matrix = Array{Int64}(undef, 2, 3)
 println(ndims(matrix))
 println(size(matrix, 2))
+
+println(join(range_arr, ", "))
+#println(range_arr[1:3])
+#println(range_arr[4:end])
+println(a[1:2])
+println(a[3:end])
+
+arr = [1, 2, 3, 4, 5]
+arr[2:4] = [8, 9, 10]
+println(arr)
+
+z5 = zeros(5)
+println(z5)
+
+eq_arr = range(0, stop=10, length=5)
+println(eq_arr)
+
+fill!(arr, 42)
+println(arr)
+
+v1 = rand(Int32, 5)
+println(v1)
+
+b = [10, 20, 30]
+c = [100, 200, 300]
+println(append!(b, c))
+println(pop!(b))       # 300
+println(b)             # [10, 20, 30, 100, 200]
+println(push!(b, 40))  # [10, 20, 30, 100, 200, 40]
+println(b)             # [10, 20, 30, 100, 200, 40]
+println(popfirst!(b))  # 10
+println(b)             # [20, 30, 100, 200, 40]
+pushfirst!(b, 10)
+println(b)             # [10, 20, 30, 100, 200, 40]
+
+println(sort(b))       # [10, 20, 30, 40, 100, 200]
+println(b)             # [10, 20, 30, 100, 200, 40]
+sort!(b)
+println(b)             # [10, 20, 30, 40, 100, 200]
+
