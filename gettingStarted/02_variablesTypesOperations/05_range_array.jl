@@ -68,3 +68,34 @@ println(b)             # [10, 20, 30, 100, 200, 40]
 sort!(b)
 println(b)             # [10, 20, 30, 40, 100, 200]
 
+for elem in b
+    println("$elem...")
+end
+
+# use .op to apply operator 'op' element-wise
+println(b .* 2)
+
+a = [1, 2, 3]
+b = [1, 10, 100]
+println(a .* b)  # [1, 20, 300]
+
+#println(dot(a, b))
+
+a = [1, 2, 4, 6]
+a1 = a # same object
+println(a1)
+a[4] = 0
+println(a1) # [1, 2, 4, 0]
+
+b = [2, 4, 6, 8]
+b1 = copy(b) # deepcopy() also exists
+b[4] = 0
+println(b1)
+
+
+chars = ['a', 'b', 'c']
+println(join(chars))      # abc
+println(string(chars))    # ['a', 'b', 'c']
+println(string(chars...)) # abc; ... passes contents of array as individ args
+
+
