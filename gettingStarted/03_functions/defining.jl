@@ -45,3 +45,19 @@ end
 
 x = [10, 11, 12]
 varargs2(1, 2, x)
+
+function insert_elem(arr)
+    push!(arr, -10)
+end
+
+arr = [2, 3, 4]
+insert_elem(arr)
+println(arr)
+
+function float64_mult(x::Float64, y::Float64)
+    println("x is $x and y is $y\nxy = $(x * y)")
+    return x * y
+end
+
+short_mult(x, y) = x * y
+println(short_mult(4, 7))
