@@ -7,3 +7,18 @@ k(x; a1=1, a2=2) = x*(a1 + a2)
 println(k(3, a2=2, a1=1)) # 9
 
 
+function allargs(normal_arg, optional_positional_arg=2; kwarg="ABC")
+    println("normal arg:   $normal_arg")
+    println("optional arg: $optional_positional_arg")
+    println("keyword arg:  $kwarg")
+end
+
+allargs("narmol", kwarg="doremi")
+
+
+function varargs(; args...)
+    print(args)
+    println()
+end
+
+varargs(one=1, two="II", three="treis", four="iv")
