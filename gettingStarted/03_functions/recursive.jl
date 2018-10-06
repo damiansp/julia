@@ -16,3 +16,5 @@ println(sum(11))
 fib(n) = n < 2 ? n : fib(n - 1) + fib(n - 2)
 println(fib(11))
 
+
+@time fib(35)
