@@ -19,3 +19,24 @@ println("z = $z")
 varout = "var has value $var"
 cond = var > 10 ? "and is > 10" :  var < 10 ? "and is < 10" : "and is = 10"
 println("$varout $cond")
+
+
+# Short-circuit evaluation
+# if <cond> <statement> end # ->
+# <cond> && <statement>
+
+# if !<cond> <statement> end # ->
+# <cond> || <statement>
+
+# Example
+function sqroot(n::Int)
+    n >= 0 || error("n must be non-negative")
+    n == 0 && return 0
+    sqrt(n)
+end
+
+println(sqroot(4))
+println(sqroot(0))
+#println(sqroot(-6)) # throws exception
+
+
