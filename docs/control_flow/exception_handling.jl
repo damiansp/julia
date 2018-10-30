@@ -58,3 +58,11 @@ println(sqrt_second([1 -4])) # 0.0 + 2.0im
 println(sqrt_second(9))      # 3.0
 #println(sqrt_second(-9))    # DomainError
 
+
+# finally
+#f = open("file")
+#try
+#  # ...
+#finally
+#  close(f)
+#end
