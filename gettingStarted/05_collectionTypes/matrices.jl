@@ -70,3 +70,22 @@ println(c)
 
 println(reshape(1:12, 3, 4)) # orders column-wise
 
+
+# deepcopy() needed to copy arrays and not just references to them
+x = [ones(2), trues(3)] #cell(2)
+x[1] = ones(2)
+x[2] = trues(3)
+println(x) # [1 1] [t t t]
+
+a = x
+b = copy(x)
+c = deepcopy(x)
+
+x[1] = "julia"
+x[2][1] = false
+println(x) # "julia", [f t t]
+println(a) # "julia", [f t t]
+println(is(a, x)) # true
+println(b)        # [1 1] [f t t]
+println(is(b, x)) # false
+println(c)        # [1 1] [t t t]
