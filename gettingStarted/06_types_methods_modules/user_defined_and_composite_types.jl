@@ -14,3 +14,11 @@ println(p2.z)
 #p2.z = 5.5 # type Point is immutable
 
 
+#immutable Vector3D
+#  x::Float64
+#  y::Float64
+#  z::Float64
+#end
+
+#3 = Vector3D(1, 2, 3)
+#p.y = 5
