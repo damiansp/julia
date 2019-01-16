@@ -45,3 +45,24 @@ function allargs(normal_arg, opt_positional_arg=2; keyword_arg="abc")
 end
 
 allargs(7, keyword_arg="five")
+
+
+# Nesting ok
+function a(x)
+    z = 2x
+    function b(z)
+        z += 1
+    end
+    b(z)
+end
+
+d = 5
+println(a(d)) # a(5): z = 10, b(z) = 11 -> 11
+
+
+# Recursion ok
+sum(n) = n > 1 ? sum(n - 1) + n : n
+println(sum(6)) # 6 + 5 + 4 +... + 1 = 21
+
+fib(n) = n < 2 ? n : fib(n - 1) + fib(n - 2)
+println(fib(5)) # 1, 1, 2, 3, 5 -> 5
