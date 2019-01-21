@@ -29,6 +29,13 @@ arr1d = rand(5)
 println(arr1d)
 println(arr1d[5])
 
-arr2d = rand(5, 2)
+arr2d = rand(5, 6)
 println(arr2d)
 println(arr2d[4, 1])
+
+println(arr2d[1:3, 3:5])
+println(arr2d[:, 4:6])
+println(arr2d[[true, false, true, true, false], 3:5])
+arr2d[1, 1] = 0.
+arr2d[[true, false, true, true, false], 3:5] = ones(3, 3)
+println(arr2d)
