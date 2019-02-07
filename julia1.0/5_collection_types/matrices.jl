@@ -27,3 +27,22 @@ println(length(rmatrix))  # 15
 
 I3 = Matrix(1. * I, 3, 3)
 println(I3)
+
+
+# copy, deepcopy
+x = Array{Any}(undef, 2)
+x[1] = ones(2)
+x[2] = trues(3)
+println(x) # [1.0, 1.0] Bool[t, t, t]
+
+a = x
+b = copy(x)
+c = deepcopy(x)
+
+x[1] = "Julia"
+x[2][1] = false
+println(x) # Julia Bool[f t t]
+println(a) # Julia Bool[f t t]
+println(b) # [1., 1.] Bool[f t t]
+println(c) # [1., 1.] Bool[t t t]
+println(isequal(c, x)) # false
