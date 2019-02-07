@@ -28,7 +28,53 @@ println(length(rmatrix))  # 15
 I3 = Matrix(1. * I, 3, 3)
 println(I3)
 
+println(I3[:,  2])
+println(I3[2, :])
+println(I3[2:end, 2:end]) # cannot use [2:, 2:] as in python
 
+
+a = [1 2;
+     3 4]
+println(a[:])
+
+jagged = (Array{Int64, 1})[]
+push!(jagged, [1, 2])
+push!(jagged, [1, 2, 3, 4])
+push!(jagged, [1, 2, 3])
+println(jagged)
+
+m = [1 2;
+     3 4]
+println(m)
+println(m') # transpose
+println(transpose(m'))
+
+println(m * m')  # matrix multiply
+println(m .* m') # elem-wise
+println(inv(m)) # inverse
+println(m * inv(m))
+
+u = [1, 2, 3]
+v = [2, 4, 6]
+println(hcat(u, v))
+println(vcat(u, v)) # same as
+println(append!(u, v))
+
+a = [1 2;
+     3 4]
+b = [5 6;
+     7 8]
+c = [a b]
+println(c)
+d = [a;
+     b]
+println(d)
+println(reshape(1:12, 3, 4))
+
+a = rand(3, 3)
+println(reshape(a, (9, 1)))
+
+        
 # copy, deepcopy
 x = Array{Any}(undef, 2)
 x[1] = ones(2)
