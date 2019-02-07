@@ -42,4 +42,13 @@ draw(PNG("irisScatter.png", 4inch, 4inch), p)
 p = plot(iris, x=:Species, y=:PetalLength, Geom.boxplot)
 draw(PNG("irisBox.png", 4inch, 4inch), p)
 
+p = plot(iris, x=:PetalLength, color=:Species, Geom.histogram)
+draw(PNG("irisHist.png", 4inch, 4inch), p)
+
+p = plot(iris, x=:PetalWidth, color=:Species, Geom.histogram)
+draw(PNG("irisHist2.png", 4inch, 4inch), p)
+
+p = plot(iris, x=:PetalWidth, y=:PetalLength, color=:Species)
+draw(PNG("irisScatter2.png", 4inch, 4inch), p)
+
 
