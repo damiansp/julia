@@ -50,5 +50,3 @@ draw(PNG("irisHist2.png", 4inch, 4inch), p)
 
 p = plot(iris, x=:PetalWidth, y=:PetalLength, color=:Species)
 draw(PNG("irisScatter2.png", 4inch, 4inch), p)
-
-
