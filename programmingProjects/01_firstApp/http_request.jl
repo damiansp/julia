@@ -21,4 +21,17 @@ println(dom.doctype)               # html
 println(dom.root.attributes)       # "class" => "client-nojs", "lang" => "en"...
 println(attrs(dom.root))           # '''        '''             ''       ''
 
-        
+println(tag(dom.root)) # :HTML
+for c in children(dom.root)
+  @show tag(c)
+end
+
+body = children(dom.root)[2]
+println(getattr(dom.root, "class")) # client-nojs
+println(in("href", collect(keys(attrs(dom.root))))) # false
+
+
+
+# Pipe operator: |>
+println(keys(attrs(dom.root)))
+dom.root |> attrs |> keys |> collect |> println
