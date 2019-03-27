@@ -1,0 +1,3 @@
+This gets written to the file, example2.dat.
+Using println() does the same thing.
+...and terminates in a new line.
