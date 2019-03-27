@@ -35,3 +35,33 @@ println(in("href", collect(keys(attrs(dom.root))))) # false
 # Pipe operator: |>
 println(keys(attrs(dom.root)))
 dom.root |> attrs |> keys |> collect |> println
+
+
+# try/catch/finally
+try
+  getattr(dom.root, "href")
+catch
+  println("The $(tag(dom.root)) tag doesn't have an 'href' attribute.")
+end
+
+
+try
+  getattr(dom.root, "href")
+catch ex
+  if isa(ex, KeyError)
+    println("The $(tag(dom.root)) tag doesn't have an '$(ex.key)' attribute")
+  else
+    println("Unexpected Error.")
+  end
+finally
+  println("Print me no matter what.")
+end
+
+
+result = try
+  error("Oh no!")
+catch ex
+  "everything under control"
+end
+
+println(result)
