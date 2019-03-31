@@ -21,4 +21,12 @@ println(z)
 z = [body[2:end, 1] body[2:end, 3]] # exclude headers
 println(z)
 
+struct People
+  name::Array{String}
+  birthdate::Array{String}
+  sex::Array{Char}
+  state::Array{String}
+end
 
+#person1 = People(body[1, :]...)
+#println(person1)
