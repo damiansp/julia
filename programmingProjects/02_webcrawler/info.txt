@@ -1,0 +1,5 @@
+Within a given dir,
+
+> pkg> activate .
+
+Will initialize it as a package
