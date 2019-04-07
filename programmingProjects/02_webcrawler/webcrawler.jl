@@ -22,7 +22,7 @@ function extract_links(elem)
       && tag(elem) == :a
       && in("href", collect(keys(attrs(elem)))))
     url = getattr(elem, "href")
-    startswith(url, "/wiki/") && push!(LINKS, url)
+    startswith(url, "/wiki/") && !occursin(":", url) && push!(LINKS, url)
   end
   for child in children(elem)
     extract_links(child)
@@ -36,4 +36,4 @@ if !isempty(content)
   extract_links(dom.root)
 end
 
-println(LINKS)
+display(unique(LINKS))
