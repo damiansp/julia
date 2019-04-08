@@ -60,6 +60,3 @@ for pid in workers()
              d)
 end
 
-
-
-# Parallel loops and maps
