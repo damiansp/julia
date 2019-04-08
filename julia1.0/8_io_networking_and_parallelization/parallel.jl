@@ -22,3 +22,44 @@ r1 = remotecall(x -> x^2, 2, 1000)
 println(fetch(r1)) # 10000000
 
 remotecall_feth(sin, 5, 2pi)
+
+
+r2 = @spawnat 4 sqrt(2) # has worker 4 calcualte sqrt(2)
+fetch(r2)
+
+r = [@spawnat w sqrt(5) for w in workers()]
+fetch(r[3])
+
+@everywhere println(myid())
+
+# Workers correspond to different processes and hence don't share vars
+x = 5
+#@everywhere println(x) # throws UndefVarError: x not defined
+
+@everywhere x = 5
+@everywere println(x)
+
+@everywhere include("defs.jl")
+
+@everywhere function fib(n)
+  if (n < 2)
+    return n
+  else
+    return fib(n - 1) + fib(n - 2)
+  end
+end
+
+include("functions.jl") # makes available to all workers
+
+# broadcast a variable "d"
+for pid in workers()
+  remotecall(pid,
+             x -> (global d
+                   d = x
+                   nothing),
+             d)
+end
+
+
+
+# Parallel loops and maps
