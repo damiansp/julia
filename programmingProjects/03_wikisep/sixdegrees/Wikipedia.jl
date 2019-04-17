@@ -2,7 +2,7 @@ module Wikipedia
 export fetchrandom, fetchpage, articlelinks
 
 
-
+using Cascadia
 using Gumbo
 using HTTP
 
@@ -20,17 +20,10 @@ function fetchpage(url)
 end
 
 
-function extractlinks(elem, links=String[])
-  if (isa(elem, HTMLElement)
-      && tag(elem) == :a
-      && in("href", collect(keys(attrs(elem)))))
-    url = getattr(elem, "href")
-    startswith(url, "/wiki/") && !occursin(":", url) && push!(links, url)
-  end
-  for child in children(elem)
-    extractlinks(child, links)
-  end
-  unique(links)
+function extractlinks(elem)
+  map(eachmatch(Selector("a[href^='/wiki/']:not(a[href*=':'])"), elem)) do e
+    e.attributes["href"]
+  end |> unique
 end
 
 
