@@ -6,6 +6,8 @@ using Cascadia
 using Gumbo
 using HTTP
 
+import Cascadia: matchFirst # nor publicly exposed method so this makes it vis
+
 
 const PROTOCOL = "https://"
 const DOMAIN = "en.m.wikipedia.org"
@@ -42,8 +44,20 @@ function articlelinks(content)
   end
 end
 
+
 function buildurl(articleurl)
   PROTOCOL * DOMAIN * articleurl
+end
+
+
+function extracttitle(elem)
+  matchFirst(Selector("#section_0"), elem) |> nodeText
+end
+
+
+function extractimage(elem)
+  e = matchFirst(Selector(".content a.image img"), elem)
+  isa(e, Void) ? "" : e.attributes["src"]
 end
 
 
