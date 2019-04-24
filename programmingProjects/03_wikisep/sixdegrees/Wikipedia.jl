@@ -7,10 +7,13 @@ using Gumbo
 using HTTP
 
 
-const RANDOM_PAGE_URL = "https://en.m.wikipedia.org/wiki/Special:Random"
+const PROTOCOL = "https://"
+const DOMAIN = "en.m.wikipedia.org"
+const RANDOM_PAGE_URL = buildurl("/wiki/Special:Random")
 
 
 function fetchpage(url)
+  url = startswith(url, "/") ? buildurl(url) : url
   response = HTTP.get(url)
   if response.status == 200 && length(response.body)  > 0
     String(response.body)
@@ -37,6 +40,10 @@ function articlelinks(content)
     dom = Gumbo.parsehtml(content)
     links = extractlinks(dom.root)
   end
+end
+
+function buildurl(articleurl)
+  PROTOCOL * DOMAIN * articleurl
 end
 
 
