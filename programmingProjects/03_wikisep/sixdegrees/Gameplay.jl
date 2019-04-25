@@ -19,7 +19,7 @@ function newgame(difficulty=DIFFICULTY_HARD)
       rand(articles[i - 1][:links]) |> Wikipedia.fetchpage
     end
     articledata = Dict(:content => article, :links => articlelinks(article))
-    push!(articles, articledata)
+    push!(articles, articleinfo(article))
   end
   articles
 end

@@ -5,7 +5,6 @@ export fetchrandom, fetchpage, articlelinks
 using Cascadia
 using Gumbo
 using HTTP
-
 import Cascadia: matchFirst # nor publicly exposed method so this makes it vis
 
 
@@ -39,9 +38,18 @@ end
 
 function articlelinks(content)
   if !isempty(content)
-    dom = Gumbo.parsehtml(content)
-    links = extractlinks(dom.root)
+    return Gumbo.parsehtml(content)
   end
+  error("Article content cannot be parsed into dom")
+end
+
+
+function articleinfo(content)
+  dom = article(content)
+  Dict(:content => content,
+       :links => extractlinks(dom.root),
+       :title => extracttitle(dom.root),
+       :image => extracttitle(dom.root))
 end
 
 
