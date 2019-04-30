@@ -12,7 +12,7 @@ const DIFFICULTY_HARD = 6
 
 function newgame(difficulty=DIFFICULTY_HARD)
   articles = []
-  for i in 1:difficulty
+  for i in 1:difficulty + 1
     article = if i == 1
       fetchrandom()
     else

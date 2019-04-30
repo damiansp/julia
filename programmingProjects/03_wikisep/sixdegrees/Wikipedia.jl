@@ -1,5 +1,5 @@
 module Wikipedia
-export fetchrandom, fetchpage, articlelinks
+export fetchrandom, fetchpage, articlelinks, articleinfo
 
 
 using Cascadia
@@ -10,8 +10,7 @@ import Cascadia: matchFirst # nor publicly exposed method so this makes it vis
 
 const PROTOCOL = "https://"
 const DOMAIN = "en.m.wikipedia.org"
-const RANDOM_PAGE_URL = buildurl("/wiki/Special:Random")
-
+const RANDOM_PAGE_URL = PROTOCOL * DOMAIN * "/wiki/Special:Random"
 
 function fetchpage(url)
   url = startswith(url, "/") ? buildurl(url) : url
@@ -31,8 +30,27 @@ function extractlinks(elem)
 end
 
 
+function extracttitle(elem)
+  matchFirst(Selector("#section_0"), elem) |> nodeText
+end
+
+
+function extractimage(elem)
+  e = matchFirst(Selector(".content a.image img"), elem)
+  isa(e, Nothing) ? "" : e.attributes["src"]
+end
+
+
 function fetchrandom()
   fetchpage(RANDOM_PAGE_URL)
+end
+
+
+function articledom(content)
+  if !isempty(content)
+    return Gumbo.parsehtml(content)
+  end
+  error("Article content cannot be parsed to DOM")
 end
 
 
@@ -45,7 +63,7 @@ end
 
 
 function articleinfo(content)
-  dom = article(content)
+  dom = articledom(content)
   Dict(:content => content,
        :links => extractlinks(dom.root),
        :title => extracttitle(dom.root),
@@ -55,17 +73,6 @@ end
 
 function buildurl(articleurl)
   PROTOCOL * DOMAIN * articleurl
-end
-
-
-function extracttitle(elem)
-  matchFirst(Selector("#section_0"), elem) |> nodeText
-end
-
-
-function extractimage(elem)
-  e = matchFirst(Selector(".content a.image img"), elem)
-  isa(e, Void) ? "" : e.attributes["src"]
 end
 
 
