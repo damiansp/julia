@@ -34,3 +34,12 @@ me.score += 10
 println(me)
 
 
+GameEntity = Union{Player, Article}
+
+function entityname(e::GameEntity)
+  isa(e, Player) ? e.username : e.title
+end
+
+println(entityname(julia_article))
+println(entityname(me))
+        

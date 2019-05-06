@@ -1,6 +1,6 @@
 module Gameplay
 
-using ..Wikipedia # ? not just Wikipedia?
+using ..Wikipedia, ..Wikipedia.Articles
 
 export newgame
 
@@ -11,14 +11,13 @@ const DIFFICULTY_HARD = 6
 
 
 function newgame(difficulty=DIFFICULTY_HARD)
-  articles = []
+  articles = Article[]
   for i in 1:difficulty + 1
     article = if i == 1
       fetchrandom()
     else
-      rand(articles[i - 1][:links]) |> Wikipedia.fetchpage
+      rand(articles[i - 1].links) |> fetchpage
     end
-    articledata = Dict(:content => article, :links => articlelinks(article))
     push!(articles, articleinfo(article))
   end
   articles

@@ -7,6 +7,9 @@ using Gumbo
 using HTTP
 import Cascadia: matchFirst # nor publicly exposed method so this makes it vis
 
+include("Articles.jl")
+using .Articles
+
 
 const PROTOCOL = "https://"
 const DOMAIN = "en.m.wikipedia.org"
@@ -64,10 +67,10 @@ end
 
 function articleinfo(content)
   dom = articledom(content)
-  Dict(:content => content,
-       :links => extractlinks(dom.root),
-       :title => extracttitle(dom.root),
-       :image => extracttitle(dom.root))
+  Article(content,
+          extractlinks(dom.root),
+          extracttitle(dom.root),
+          extracttitle(dom.root))
 end
 
 
