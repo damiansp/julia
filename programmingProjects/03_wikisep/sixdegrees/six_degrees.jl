@@ -6,7 +6,8 @@ include("Gameplay.jl")
 using .Gameplay
 using .Wikipedia
 
+articles = newgame(Gameplay.DIFFICULTY_HARD)
 
-for article in newgame(Gameplay.DIFFICULTY_HARD)
-  println(article[:title])
+for article in articles
+  println(article.title)
 end
