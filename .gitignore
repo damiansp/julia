@@ -31,3 +31,8 @@
 supplied/
 data/
 images/
+
+
+# Files
+#-----------------------------
+db_config.json
