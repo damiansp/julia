@@ -62,14 +62,68 @@ end
 
 
 # Designing composite types
-struct Stock <: Equity
+struct Stock1 <: Equity
 	symbol::String
 	name::String
 end
 
-function describe(s::Stock)
+function describe(s::Stock1)
 	return s.symbol * "(" * s.name * ")"
 end
 
-stock = Stock("AAPL", "Apple, Inc.")
+stock = Stock1("AAPL", "Apple, Inc.")
 println(describe(stock))
+
+
+
+# Immutability
+struct BasketOfStocks
+	stocks::Vector{Stock1}
+	reason::String
+end
+
+somestocks = [Stock1("AAPL", "Apple, Inc."), Stock1("IBM", "IBM")]
+basket = BasketOfStocks(somestocks, "College Graduation Gift for Sonny")
+println(pop!(basket.stocks))
+println(basket)
+
+
+
+# Mutability
+mutable struct Stock <: Equity
+	symbol::String
+	name::String
+end
+
+stock = Stock("AAPL", "Macintosh, Inc")
+stock.name = "Apple, Inc."
+println(stock)
+
+
+
+# Union Types
+abstract type Art end
+
+struct Painting <: Art
+	artist::String
+	title::String
+end
+
+struct BasketOfThings1
+	things::Vector{Union{Painting, Stock}}
+	reason::String
+end
+
+monalisa = Painting("Leonardo da Vinci", "Monalisa")
+things = Union{Painting, Stock}[stock, monalisa]
+present = BasketOfThings1(things, "Anniversary gift for my wife")
+println(present)
+
+# Less verbose:
+const Thing = Union{Painting, Stock}
+
+struct BasketOfThings
+	things::Vector{Thing}
+	reason::String
+end
+
