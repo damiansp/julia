@@ -1,4 +1,9 @@
 using CSV
+using DataFrames
+using HTTP
+using JSON2
+using XLSX
+
 
 # 1. Reading (Input)
 
@@ -50,3 +55,61 @@ end
 # CSVs
 data = CSV.read("test.csv", missingstring="NA") # delim=','
 print(data)
+
+
+# 1.3 Importing from Excel
+if false # don't actually run
+  # Get sheet names
+  sheetnames = XLSX.sheetnames(XLSX.readxlsx("file.xlsx"))
+  # import data from sheet
+  m = XLSX.readxlsx("file.xlsx")["sheetname"][:]
+  # slice
+  m = XLSX.readxlsx("file.xlsx")["sheetname"]["B3:D6"]
+  m = XLSX.readdata("file.xlsx", "sheetname", "B3:D6")
+  df = DataFrame(XLSX.readtable("file.xlsx", "sheetname"))
+end
+
+
+# 1.4 Importing JSON
+jsonstr = """
+{
+  "species": "Oak",
+  "latitude": 53.204199,
+  "longitude": -1.072787,
+  "trees": [
+    {
+      "vol": 23.54,
+      "id": 1
+    }, {
+      "vol": 12.25,
+      "id": 2
+    }
+  ]
+}"""
+
+struct ForestStand
+  sp::String
+  lat::Float64
+  long::Float64
+  trees::Array{Dict{String, Float64}, 1}
+end
+
+nottingham = JSON2.read(jsonstr, ForestStand) # ForestStand
+nottingham2 = JSON2.read(jsonstr)          # NamedTuple
+
+
+# 1.5 Accessing Web Resources
+HTTP.open("GET", "https://julialang.org/") do io
+  while !eof(io)
+    println(String(readavailable(io)))
+  end
+end
+
+res = HTTP.get("http://julialang.org/")
+println(String(res.body))
+
+#=
+resp = HTTP.request("GET", "https://cohesiondata.ec.eu/resource/2q3n-nr7n.csv")
+df = CSV.read(IOBuffer(String(resp.body)))
+print(first(df, 3))
+=#
