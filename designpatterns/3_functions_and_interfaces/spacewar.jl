@@ -96,3 +96,55 @@ target3 = asteroids[3]
 
 shoot(spaceship, target1)
 shoot(spaceship, target1, target2, target3)
+
+
+# Splatting
+function triangularformation!(s1::Widget, s2::Widget, s3::Widget)
+	xoffset = 30
+	yoffset = 50
+	s2.position.x = s1.position.x - xoffset
+	s3.position.x = s1.position.x + xoffset
+	s2.position.y = s3.position.y = s1.position.y - yoffset
+	(s1, s2, s3)
+end
+
+spaceships = [Widget("Spaceship $i", Position(0, 0), Size(20, 50)) for i in 1:3]
+triangularformation!(spaceships...)
+
+function randommove()
+	rand([moveup!, movedown!, moveleft!, moveright!])
+end
+
+function randomleap!(w::Widget, movefunc::Function, distance::Int)
+	movefunc(w, distance)
+	w
+end
+
+randomleap!(spaceship, randommove(), rand(50:100))
+randomleap!(spaceship, randommove(), rand(50:100))
+
+
+# Anonymous funcs
+function explode(x)
+	println(x, " is explode")
+end
+
+function cleanup_galaxy(asteroids)
+	foreach(exlode, asteroids)
+end
+
+#cleanup_galaxy(asteroids)
+
+function cleanup_galaxy2(asteroids)
+	foreach(x -> println(x, " is explode!"), asteroids)
+end
+
+cleanup_galaxy2(asteroids[1:2])
+
+function cleanup_galaxy3(asteroids, spaceships)
+	ep = x -> println(x, " is EXPLODE!!")
+	foreach(ep, asteroids)
+	foreach(ep, spaceships)
+end
+
+cleanup_galaxy3(asteroids[3:end], spaceships)
