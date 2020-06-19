@@ -148,3 +148,55 @@ function cleanup_galaxy3(asteroids, spaceships)
 end
 
 cleanup_galaxy3(asteroids[3:end], spaceships)
+
+
+# Do-syntax
+healthy(spaceship) = rand(Bool)
+
+# Make sure ship is healthy before any operation
+function fire(f::Function, spaceship::Widget)
+	if healthy(spaceship)
+		f(spaceship)
+	else
+		println("Operation aborted: unhealthy ship")
+	end
+	nothing
+end
+
+for i in 1:5
+	fire(s -> println(s, " launched missile!"), spaceship)
+end
+
+for i in 1:5
+	fire(s -> begin
+		moveup!(s, 100)
+		println(s, "launched missle and retreated!")
+		movedown!(s, 100)
+	end,
+	spaceship)
+end
+
+# cleaner: do-block defines an anonymous function passed in as the first arg of 
+# fire()
+for i in 1:5
+	fire(spaceship) do s
+		moveup!(s, 100)
+		println(s, " blitzkreiged yo ass!")
+		movedown!(s, 100)
+	end
+end
+
+function processfile(func::Function, filename::AbstractString)
+	ios = nothing
+	try
+		ios = open(filename)
+		func(ios)
+	finally
+		close(ios)
+	end
+end
+
+processfile("/Users/dsp/.bashrc") do ios
+	lines = readlines(ios)
+	println(length(lines))
+end
