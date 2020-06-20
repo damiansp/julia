@@ -76,3 +76,26 @@ println(dfout)
 df[(df.region .== "EU"), :region] .= "Canada"
 show(df)
 println()
+
+push!(df, ["EU", "Softwood", 2012, 5.2, 6.2])
+df.regprod = df.region .* " " .* df.product
+deleterows!(df, 2)
+
+
+
+# 6. Editing Structure
+select!(df, Not([:region, :product]))
+names!(df, [:Region, :Product, :Year, :Production, :Consumption, :RegProd])
+df = df[:, [:Year, :Product, :Region, :Production, :Consumption, :RegProd])
+df.id = 1:size(df, 1)
+insert!(df, 3, 2020, :Year)
+
+
+
+# 7. Managing Missing Values
+dropmissing!(df)
+df = completecases(df)
+
+
+
+# 8. Split-Apply-Combine
