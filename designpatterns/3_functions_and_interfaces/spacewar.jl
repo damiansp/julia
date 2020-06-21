@@ -200,3 +200,5 @@ processfile("/Users/dsp/.bashrc") do ios
 	lines = readlines(ios)
 	println(length(lines))
 end
+
+
