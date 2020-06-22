@@ -96,3 +96,22 @@ collide(a1, s1)
 collide(s1, a1)
 
 #collide(a1, a2) # ambiguity
+
+
+function collide(A::Asteroid, B::Asteroid)
+	println("Be these asteroids a-collidin'?")
+	return true # test only
+end
+
+collide(a1, a2) 
+
+
+# Dynamic Dispatch
+function checkrandomly(things)
+	for i in 1:5
+		two = rand(things, 2)
+		collide(two...)
+	end
+end
+
+checkrandomly([s1, s2, a1, a2])
