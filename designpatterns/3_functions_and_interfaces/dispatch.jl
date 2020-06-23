@@ -115,3 +115,37 @@ function checkrandomly(things)
 end
 
 checkrandomly([s1, s2, a1, a2])
+
+
+# Type Params
+function explodeAny(things::AbstractVector{Any})
+	for t in things
+		println(t, " is explode")
+	end
+end
+
+function explodeAnyVec(things::AbstractVector{T}) where {T}
+	for t in things
+		println(t, " is explode!")
+	end
+end
+
+explodeAnyVec([a1, a2])
+explodeAnyVec([:building, :gasstation])
+
+function explode(things::AbstractVector{T}) where {T <: Thing}
+	for t in things
+		println("Thing ", t, " is EXPLODE!")
+	end
+end
+
+explode([s1, a2])
+
+
+# Replace abstract types with type params
+function towThing(A::Spaceship, B::Thing)
+	"tow 1: Spaceship towing Thing"
+end
+
+function tow(A::Spaceship, B::T) where {T <: Thing}
+	"tow 2: Spaceship towing Thing"
