@@ -149,3 +149,23 @@ end
 
 function tow(A::Spaceship, B::T) where {T <: Thing}
 	"tow 2: Spaceship towing Thing"
+end
+
+
+function groupanything(A::Thing, B::Thing)
+	println("Grouped ", A, " and ", B)
+end
+
+groupanything(s1, s2)
+groupanything(a1, a2)
+groupanything(s1, a2)
+
+function groupsamethings(A::T, B::T) where {T <: Thing}
+	println("Grouped ", A, " and ", B)
+end
+
+println(eltype([s1, s2])) # Spaceship
+println(eltype([a1, a2])) # Asteroid
+println(eltype([s1, a1])) # Thing 
+println(typeof([s1, s2])) # Array{Spaceship,1}
+println(typeof([s1, a1])) # Array{Thing,1}
