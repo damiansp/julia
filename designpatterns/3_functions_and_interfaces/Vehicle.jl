@@ -11,9 +11,11 @@ export go!
 # turn!(v, direction) - steer the vehicle to the specified direction 
 # move!(v, distance) - move the vehicle by the specified distance
 # getposition(v) - returns the (x,y) position of the vehicle
+# engagewheels!(v) - engage wheels for landing (Optional)
 
 
 # 3. Generic Defs for Interface
+# Hard contracts
 """
 Power on the vehicle so it is ready to go
 """
@@ -26,6 +28,9 @@ function poweroff! end
 function turn! end
 function move! end
 function getposition end
+
+# Soft contracts
+engagewheels!(args...) = nothing
 
 
 # 4. Game Logic
@@ -43,3 +48,9 @@ function go!(vehicle, destination)
 	poweroff!(vehicle)
 	nothing
 end  # module
+
+# Landing
+function land!(vehicle)
+	engagewheels!(vehicle)
+	println("Landing vehicle: ", vehicle)
+end
