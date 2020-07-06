@@ -32,6 +32,8 @@ function getposition end
 # Soft contracts
 engagewheels!(args...) = nothing
 
+# trait
+haswheels(vehicle) = error("Not implemented")
 
 # 4. Game Logic
 # Returns a travel plan from current position to destination
@@ -54,3 +56,12 @@ function land!(vehicle)
 	engagewheels!(vehicle)
 	println("Landing vehicle: ", vehicle)
 end
+
+# Landing (using trait)
+function land2!(vehicle)
+	haswheels(vehicle) && engagewheels!(vehicle)
+	println("Landing vehicle: ", vehicle)
+end
+
+
+end # module
