@@ -6,3 +6,9 @@ ex = :(x + y)
 println(ex)
 dump(ex)
 
+ex = quote
+  x = 1
+  y = 2
+end
+println(ex)
+
