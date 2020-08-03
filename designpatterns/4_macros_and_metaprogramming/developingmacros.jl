@@ -33,3 +33,26 @@ end
 @showit a # x = :a
 @showit b # x = :b
 @showit c # x = :c
+
+#=
+macro squared(x)
+	return :($(x) * $(x))
+end
+
+function foo()
+	x = 2
+	return @squared x # Err: x not defined
+end
+=#
+
+macro squared(x)
+	return :($(esc(x)) * $(esc(x)))
+end
+
+function foo()
+	x = 2
+	return @squared x
+end
+
+println(foo()) # 4
+
