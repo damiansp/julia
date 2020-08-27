@@ -1,7 +1,7 @@
 # Explore commonly used data-science packages
 
 ### TODO:
-- [ ] DataFrames
+- [x] DataFrames
 - [ ] Plots
 - [ ] StatPlots
 - [ ] ScikitLearn
