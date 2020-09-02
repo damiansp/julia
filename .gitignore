@@ -1,4 +1,4 @@
-# OS Generated
+# OS/Emacs Generated
 #-----------------------------
 .DS_Store
 *~
@@ -6,13 +6,14 @@
 
 # File types
 #-----------------------------
-*.txt
 *.csv
 *.feather
+*.txt
 
 # Images
-*.svg
+*.pdf
 *.png
+*.svg
 
 
 

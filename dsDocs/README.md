@@ -15,8 +15,12 @@
     - [ ] kMeans
     - [ ] Gaussian Mixtures
     - [ ] Hierarchical
+- [ ] MLBase.jl
+- [ ] MachineLearning.jl
+- [ ] Mocha.jl
 - [ ] Neural Nets
   - [ ] Basic Feed-Forward
   - [ ] RNN
   - [ ] CNN
 - [ ] NLP stuff...
+- [ ] TextAnalysis.jl
