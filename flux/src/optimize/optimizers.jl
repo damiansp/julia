@@ -75,7 +75,7 @@ mutable struct ADAM
   state::IdDict
 end
 
-ADAM(eta=0.001, beta=(0.0, 0.999)) = ADAM(eta, beta, IdDict())
+ADAM(eta=0.001, beta=(0.9, 0.999)) = ADAM(eta, beta, IdDict())
 
 
 function apply!(o::ADAM, x, gradient)
@@ -93,6 +93,36 @@ end
 
 
 mutable struct RADAM
-  ... # continue here
+  eta::Float64
+  beta::Tuple{Float64, Float64}
+  state::IdDict
 end
 
+RADAM(eta=0.001, beta=(0.9, 0.999)) = RADAM(eta, beta, IdDict())
+
+
+function apply!(o::RADAM, x, gradient)
+  eta, beta = o.eta, o.beta
+  rhoinf = 2/(1 - beta[2]) - 1
+  mt, vt, betap, t = get!(o.state, x) do
+    (zero(x), zero(x), Float64[beta[1], beta[2]], Ref(1))
+  end::Tuple{typeof(x), typeof(x), Vector{Float64}, Ref{Int}}
+  @. mt = beta[1]*mt + (1 - beta[1])*gradient
+  @. vt = beta[2]*vt + (1 - beta[2])*gradient^2
+  rho = rhoinf - 2t[] * betap[2] / (1 - betap[2])
+  if rho > 4
+    r = sqrt((rho - 4)*(rho - 2)*rhoinf / ((rhoinf - 4)*(rhoinf - 2)*rho))
+    @. gradient = (
+      mt / (1 - betap[1]) / (sqrt(vt / (1 - betap[2])) + EPSILON) * eta * r)
+  else
+    @. gradient = mt / (1 - betap[1]) * eta
+  end
+  betap .= betap .* beta
+  t[] += 1
+  return gradient
+end
+
+
+mutable struct AdaMax
+  # TODO
+end
