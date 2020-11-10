@@ -124,5 +124,27 @@ end
 
 
 mutable struct AdaMax
+  eta::Float64
+  beta::Tuple{Float64, Float64}
+  state::IdDict
+end
+
+AdaMax(eta=0.001, beta=(0.9, 0.999)) = AdaMax(eta, beta, IdDict())
+
+
+function apply!(o::AdaMax, x, gradient)
+  eta, beta = o.eta, o.beta
+  mt, ut, betap = get!(o.state, x) do
+    (zero(x), zero(x), Float64[beta[1], beta[2]])
+  end::Tuple{typeof(x), typeof(x), Vector{Float64}}
+  @. mt = beta[1]*mt + (1 - beta[1])*gradient
+  @. ut = max(beta[2] * ut, abs(gradient))
+  @. gradient = (eta/(1 - betap[1])) * mt/(ut + EPSILON)
+  betap .= betap .* beta
+  return gradient
+end
+
+
+mutable struct OADAM
   # TODO
 end
