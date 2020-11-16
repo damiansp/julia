@@ -146,5 +146,29 @@ end
 
 
 mutable struct OADAM
+  eta::Float64
+  beta::Tuple{Float64, Float64}
+  state::IdDict
+end
+
+OADAM(eta=0.001, beta=(0.5, 0.9)) = OADAM(eta, beta, IdDict())
+
+
+function apply!(o::OADAM, x, gradient)
+  eta, beta = o.eta, o.beta
+  mt, vt, grad_, betap = get!(o.state, x) do
+    (zero(x), zero(x), zero(x), typeof(x), Float64[beta[1], beta[2]])
+  end::Tuple{typeof(x), typeof(x), typeof(x), Vector{Float64}}
+  @. mt = beta[1]*mt + (1 - beta[1])*gradient
+  @. vt = beta[2]*vt + (1 - beta[2])*gradient^2
+  @. gradient = -grad_
+  @. grad_ = eta * mt / (1 - betap[1]) / (sqrt(vt / (1 - betap[2])) + EPSILON)
+  @. gradient += 2grad_
+  betap .= betap .* beta
+  return gradient
+end
+
+
+mutable struct ADAGrad
   # TODO
 end
