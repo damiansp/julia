@@ -170,5 +170,20 @@ end
 
 
 mutable struct ADAGrad
-  # TODO
+  eta::Float64
+  acc::IdDict
+end
+
+ADAGrad(eta=0.1) = ADAGrad(eta, IdDict())
+
+
+function apply!(o::ADAGrad, x, gradient)
+  eta = o.eta
+  acc = get!(() -> fill!(similar(x), EPSILON), o.acc, x)::typeof(x)
+  @. acc += gradient^2
+  @. gradient *= eta / (sqrt(acc) + EPSILON)
+end
+
+mutable struct ADADelta
+  
 end
