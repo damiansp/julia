@@ -1,1 +1,0 @@
-"/Applications/Julia.app/Contents/Resources/julia/bin/julia" --color=yes --depwarn=no -q -i -- ../bootstrap.jl si %*
