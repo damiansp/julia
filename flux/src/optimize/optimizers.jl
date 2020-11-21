@@ -184,6 +184,50 @@ function apply!(o::ADAGrad, x, delta)
   @. delta *= eta / (sqrt(acc) + EPSILON)
 end
 
+
 mutable struct ADADelta
-  
+  rho::Float64
+  state::IdDict
+end
+
+ADADelta(rho=0.9) = ADADelta(rho, IdDict())
+
+
+function apply!(o::ADADelta, x, delta)
+  rho = o.rho
+  acc, delta_acc = get!(
+    () -> (zero(x), zero(x)), o.state, x
+  )::NTuple{2, typeof(x)}
+  @. acc = rho*acc + (1 - rho)*delta^2
+  @. delta *= sqrt(delta_acc + EPSILON) / sqrt(acc + EPSILON)
+  @. delta_acc = rho*delta_acc + (1 - rho)*delta^2
+  return delta
+end
+
+
+mutable struct AMSGrad
+  eta::Float64
+  beta::Tuple{Float64, Float64}
+  state::IdDict
+end
+
+AMSGrad(eta=0.001, beta=(0.9, 0.999)) = AMSGrad(eta, beta, IdDict())
+
+
+function apply!(o::AMSGrad, x, delta)
+  eta, beta = o.eta, o.beta
+  mt, vt, vhatt = get!(o.state, x) do
+    (fill!(similar(x), EPSILON), 
+     fill!(similar(x), EPSILON), 
+     fill!(similar(x), EPSILON))::NTuple{3, typeof(x)}
+  end
+  @. mt = beta[1]*mt + (1 - beta[1])*delta
+  @. vt = beta[2]*vt + (1 - beta[2])*delta^2
+  @. vhatt = max(vhatt, vt)
+  @. delta = eta*mt / (sqrt(vhatt + EPSILON))
+end
+
+
+mutable struct NADAM
+  # ...
 end
