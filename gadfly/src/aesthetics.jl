@@ -143,3 +143,58 @@ function defined_aesthetics(aes::Aesthetics)
     getfield(aes, name) === nothing || push!(vars, name)
   end
 end
+
+
+# Raise an err if any of the given aes not defined
+# Args:
+#   who: A str naming the caller which is printed in the err msg
+#   aes: An Aesthetics obj
+#   vars: Symbol taht must be defined in aesthetics
+undefined_aesthetics(aes::Aesthetics, vars::Symbol...) = setdiff(
+  Set(vars), defined_aesthetics)
+
+
+function assert_aesthetics_defined(
+    who::AbstractString, aes::Aesthetics, vars::Symbol...)
+  undefined_vars = undefined_aesthetics(aes, vars...)
+  isempty(undefined_vars) || error("The following aesthetics are requried by ", 
+                                   who, "but are not defined: ", 
+                                   join(undefined_vars, ", "), 
+                                   "\n")
+end
+
+
+function assert_aesthetics_undefined(
+    who::AbstractString, aes::Aesthetics, vars::Symbol...)
+  defined_vars = intersect(Set(vars), defined_aesthetics(aes))
+  isempty(defined_vars) || error(
+    "The following aesthetics are defined but incompatible with ", who, ": ", join(defined_vars, ", "), 
+    "\n")
+end
+
+
+function assert_aesthetics_equal_length(
+    who::AbstractString, aes::Aesthetics, vars::Symbol...)
+  defined_vars = filter(var -> !(getfield(aes, var) === nothing), [vars...])
+  if !isempty(defined_vars)
+    n = length(getfield(aes, first(defined_vars)))
+    for var in defined_vars
+      length(getfield(aes, var)) != n && error(
+        "The following aesthetics are required by ", who, 
+        " to be of equal length: ", 
+        join(defined_vars, ", "), 
+        "\n")
+    end
+  end
+end
+
+
+# Replace vals in a with non-nothing vals in b.
+# Args:
+#   a: Dest
+#   b: Source
+# Returns: nothing
+# Modifies: a
+function update!(a::Aesthetics, b::Aesthetics)
+  # TODO
+end
