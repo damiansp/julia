@@ -229,5 +229,35 @@ end
 
 
 mutable struct NADAM
-  # ...
+  eta::Float64
+  beta::Tuple{Float64, Float64}
+  state::IdDict
+end
+
+NADAM(eta=0.001, beta=(0.9, 0.999)) = NADAM(eta, beta, IdDict())
+
+
+function apply!(o::NADAM, x, delta)
+  eta, beta = o.eta, o.beta
+  mt, vt, betap = get!(o.state, x) do
+    (zero(x), zero(x), Float64[o.beta[1], o.beta[2]])
+  end::Tuple{typeof(x), typeof(x), Vector{Float64}}
+  beta1p, beta2p = betap
+  @. mt = beta[1]*mt + (1 - beta[1])*delta
+  @. vt = beta[2]*vt + (1 - beta[2])*delta^2
+  @. delta = (
+    (beta[1]*mt / (1 - beta[1]*beta1p) + (1 - beta[1])*delta / (1 - beta1p)) 
+    / (sqrt(vt * beta[2] / (1 - beta2p)) + EPSILON) 
+    * eta)
+  betap .= betap .* beta
+  return delta
+end
+
+
+ADAMW(eta=0.001, beta=(0.9, 0.999), decay=0) = Optimizer(ADAM(eta, beta),       
+                                                         WeightDecay(decay))
+
+
+mutable struct AdaBelief
+  # TODO
 end
