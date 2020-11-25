@@ -259,5 +259,59 @@ ADAMW(eta=0.001, beta=(0.9, 0.999), decay=0) = Optimizer(ADAM(eta, beta),
 
 
 mutable struct AdaBelief
+  eta::Float64
+  beta::Tuple{Float64, Float64}
+  state::IdDict
+end
+
+AdaBelief(eta=0.001, beta=(0.9, 0.999)) = AdaBelief(eta, beta, IdDict())
+
+
+function apply!(o::AdaBelief, x, delta)
+  eta, beta = o.eta, o.beta
+  mt, st = get!(() -> (zero(x), zero(x)), o.state, x)::NTuple{2, typeof(x)}
+  @. mt = beta[1]*mt + (1 - beta[1])*delta
+  @. st = beta[2]*st + (1 - beta[2])*(delta - mt)^2
+  @. delta = eta * mt / (sqrt(st) + EPSILON)
+  return delta
+end
+
+
+# Compose Optimizers
+"""
+    Optimizer(a, b, c...)
+Combine several optimizers into one.  Each optimizer produces a modified 
+gradient that will be fed into the next, and this is finally applies to the 
+param as usual.
+"""
+mutable struct Optimizer
+  os::Vector{Any}
+end
+
+Optimizer(o...) = Optimizer(Any[o...])
+Optimiser(o...) = Optimizer(Any[o...])
+
+@forward Optimizer.os Base.getindex, Base.first, Base.last, Base.lastindex, 
+  Base.push!, Base.setindex!
+@forward Optimizer.os.Base.iterate
+
+Base.getindex(c::Optimizer, i::AbstractArray) = Optimizer(c.os[i]...)
+
+
+function apply!(o::Optimizer, x, delta)
+  for opt in o.os 
+    delta = apply!(opt, x, delta)
+  end
+  delta
+end
+
+
+"""
+    InvDecay(gamma=0.001)
+Apply inverse time decay to an Optimizer so that the effective time step size
+at iteration `n` is `eta / (1 + gamma*n)` where `eta` is the inital step size.
+The wrapped Optimizer's step size is not modified.
+"""
+mutable struct InvDecay
   # TODO
 end
