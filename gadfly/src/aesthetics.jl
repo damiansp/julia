@@ -196,5 +196,49 @@ end
 # Returns: nothing
 # Modifies: a
 function update!(a::Aesthetics, b::Aesthetics)
-  # TODO
+  for name in valid_aesthetics
+    bfield = getfield(b, name)
+    issomething(bfield) && setfield(a, name, bfield)
+  end
+  nothing
 end
+
+
+# Serialize aesthetics to JSON
+# Args:
+#   a: aesthetics to serialize
+# Returns: JSON data as a string
+json(a::Aesthetics) = join(
+  [string(a, ":", json(getfield(a, var))) for var in aes_vars], 
+  ",\n")
+
+
+# Concatenate aesthetics
+# A new Aesthetics instance is produced with data vectors in each of the given
+# Aestetics concatenated, nothing being treated as an empty vector
+# Args:
+#   aess: One or more aesthetics
+# Returns: A new Aesthetics instance with vectors concatenated.
+function concat(aess::Aesthetics...)
+  cataes = Aesthetics()
+  for aes in aess
+    for var in valid_aesthetics
+      if var in [:xviewmin, :yviewmin]
+        mu, mv = getfield(cataes, var), getfield(aes, var)
+        setfield!(
+          cataes, var, mu === nothing ? mv : mv == nothing ? mu : min(mu, mv))
+      elseif var in [:xviewmax, :yviewmax]
+        mu, mv = getfield(cataes, var), getfield(aes, var)
+        setfield!(
+          cataes, var, mu === nothing ? mv : mv == nothing ? mu : min(mu, mv))
+      else
+        setfield!(
+          cataes, var, cat_aes_var!(getfield(cataes, var), getfield(aes, var)))
+      end
+    end
+  end
+  cataes
+end
+
+
+
