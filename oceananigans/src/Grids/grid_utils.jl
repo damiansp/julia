@@ -83,11 +83,78 @@ Returns 1, the 'len' of a field along a reduced dim.
 @inline domain(topo, N, xi) = xi[1], xi[N + 1]
 @inline domain(::Type{Flat}, N, xi) = xi[1], xi[1]
 
-@inline x_domain(grid) = domain(toplogy(grid, 1), grid.Nx, grid.xF)
-@inline y_domain(grid) = domain(toplogy(grid, 2), grid.Ny, grid.yF)
-@inline z_domain(grid) = domain(toplogy(grid, 3), grid.Nz, grid.zF)
+@inline x_domain(grid) = domain(topology(grid, 1), grid.Nx, grid.xF)
+@inline y_domain(grid) = domain(topology(grid, 2), grid.Ny, grid.yF)
+@inline z_domain(grid) = domain(topology(grid, 3), grid.Nz, grid.zF)
 
 
 # Indexing
 @inline left_halo_indices(loc, topo, H) = 1 - H:0
-@inline left_halo_indices(::Type{Nothing}, topo, N, H) = 1:0 # empty 
+@inline left_halo_indices(::Type{Nothing}, topo, N, H) = 1:0 # empty
+
+@inline right_halo_indices(loc, topo, H) = N + 1:N + H
+@inline right_halo_indices(::Type{Face}, ::Type{Bounded}, N, H) = 
+    N + 2:N + H + 1
+@inline right_halo_indices(::Type{Nothing}, topo, N, H) = 1:0 # empty
+
+@inline underlying_left_halo_indices(loc, topo, N, H) = 1:H
+@inline underlying_left_halo_indices(::Type{Nothing}, topo, N, H) = 1:0 # empty
+
+@inline underlying_right_halo_indices(loc, topo, N, H) = N + H + 1:N + 2H
+@inline underlying_right_halo_indices(::Type{Face}, ::Type{Bounded}, N, H) =
+    N + H + 2:N + 2H + 1
+@inline underlying_right_halo_indices(::Type{Nothing}, topo, N, H) = 1:0 # empty
+
+@inline interior_indices(loc, topo, N) = 1:N
+@inline interior_indices(::Type{Face}, ::Type{Bounded}, N) = 1:N + 1
+@inline interior_indices(::Type{Nothing}, topo, N) = 1:1
+
+@inline interior_x_indices(loc, grid) = interior_indices(
+    loc, topology(grid, 1), grid.Nx)
+@inline interior_y_indices(loc, grid) = interior_indices(
+    loc, topology(grid, 2), grid.Ny)
+@inline interior_z_indices(loc, grid) = interior_indices(
+    loc, topology(grid, 3), grid.Nz)
+
+@inline interior_parent_indices(loc, topo, N, H) = 1 + H:N + H
+@inline interior_parent_indices(::Type{Face}, ::Type{Bounded}, N, H) = 
+    1 + H:N + H + 1
+@inline interior_parent_indices(::Type{Nothing}, topo, N) = 1:1
+
+# All indices (including halos)
+@inline all_indices(loc, topo, N, H) = 1 - H:N + H
+@inline all_indices(::Type{Face}, ::Type{Bounded}) = 1 - H:N + H + 1
+@inline all_indices(::Type{Nothing}, topo, N, H) = 1:1
+
+@inline all_x_indices(loc, grid) = all_indices(
+    loc, topology(grid, 1), grid.Nx, grid.Hx)
+@inline all_y_indices(loc, grid) = all_indices(
+    loc, topology(grid, 2), grid.Ny, grid.Hy)
+@inline all_z_indices(loc, grid) = all_indices(
+    loc, topology(grid, 3), grid.Nz, grid.Hz)
+
+@inline all_parent_indices(loc, topo, N, H) = 1:N + 2H
+@inline all_parent_indices(::Type{Face}, ::Type{Bounded}, N, H) = 1:N + 2H + 1
+@inline all_parent_indices(::Type{Nothing}, topo, N, H) = 1:1
+
+@inline all_parent_x_indices(loc, grid) = all_parent_indices(
+    loc, topology(grid, 1), grid.Nx, grid.Hx)
+@inline all_parent_y_indices(loc, grid) = all_parent_indices(
+    loc, topology(grid, 2), grid.Ny, grid.Hy)
+@inline all_parent_z_indices(loc, grid) = all_parent_indices(
+    loc, topology(grid, 3), grid.Nz, grid.Hz)
+
+
+# Nodes
+
+# Node by node
+@inline xnode(::Type{Cell}, i, grid) = @inbounds grid.xC[i]
+@inline xnode(::Type{Face}, i, grid) = @inbounds grid.xF[i]
+
+@inline ynode(::Type{Cell}, j, grid) = @inbounds grid.yC[j]
+@inline ynode(::Type{Face}, j, grid) = @inbounds grid.yF[j]
+                        
+@inline znode(::Type{Cell}, k, grid) = @inbounds grid.zC[k]
+@inline znode(::Type{Face}, k, grid) = @inbounds grid.zF[k]
+
+# Convenience

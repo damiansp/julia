@@ -241,4 +241,54 @@ function concat(aess::Aesthetics...)
 end
 
 
+cat_aes_var!(a::(Nothing), b::(Nothing)) = a
+cat_aes_var!(a::(Nothing), b::Union{Function, AbstractString}) = b
+cat_aes_var!(a::(Nothing), b) = copy(b))
+cat_aes_var!(a::Function, b::Function) = a === string || a == showoff ? b : a
 
+
+function cat_aes_var!(a::Dict, b::Dict)
+  merge!(a, b)
+  a
+end
+
+cat_aes_var!(a::AbstractVector{T}, b::AbstractVector{T}) where 
+  {T <: Base.Callable} = append!(a, b)
+cat_aes_var!(a::AbstractVector{T}, b::AbstractVector{U}) where 
+  {T <: Base.Callable, U <: Base.Callable} = a = [a..., b...]
+
+# Let arrays of numbers clobber arrays of funs.
+cat_aes_var!(a::AbstractVector{T}, b::AbstractVector{U}) where 
+  {T <: Base.Callable, U} = b
+cat_aes_var!(a::AbstractVector{T}, b::AbstractVector{U}) where
+  {T, U <: Base.Callable} = a
+cat_aes_var!(a::AbstractVector{T}, b::AbstractVector{T}) where {T} = append!(a,
+                                                                             b)
+cat_aes_var!(a, b) = b
+
+
+function cat_aes_var!(a::AbstractVector{T}, b::AbstractVector{U}) where {T, U}
+  V = promote_type(T, U)
+  ab = Array{V}(undef, length(a) + length(b))
+  i = 1
+  for x in a
+    ab[i] = x
+    i += 1
+  end
+  for x in b
+    ab[i] = x
+    i += 1
+  end
+  ab
+end
+
+
+function cat_aes_var!(xs::IndirectArray{T, 1}, ys::IndirectArray{S, 1}) where
+    {T, S}
+  TS = promote_type(T, S)
+  return append!(IndirectArray(xs.index, convert(Array{TS}, xs.values)),
+                 IndirectArray(ys.index, convert(Array{TS}, ys.vaues)))
+end
+
+cat_aes_var!(a::AbstractVector{T}, b::AbstractVector{U}) where 
+  {T <: Measure, U <: Measure} = [a..., b...]
