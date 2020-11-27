@@ -313,5 +313,56 @@ at iteration `n` is `eta / (1 + gamma*n)` where `eta` is the inital step size.
 The wrapped Optimizer's step size is not modified.
 """
 mutable struct InvDecay
-  # TODO
+  gamma::Float64
+  state::IdDict
 end
+
+InvDecay(gamma=0.001) = InvDecay(gamma, IdDict())
+
+
+function apply!(o::InvDecay, x, delta)
+  gamma = o.gamma
+  n = get!(o.state, x, 1)
+  delta .*= 1 / (1 + gamma*n)
+  o.state[x] = n + 1
+  delta
+end
+
+
+"""
+    ExpDecay(eta=0.001, decay=0.1, decay_step=1000, clip=1e-4)
+Discout the learning rate `eta` by a factor `decay` every `decay_step` steps
+until a minumum value of `clip` is reached.
+Args:
+  eta: Learning rate; amt by which gradients are discounted before updating 
+    weights
+  decay: Factor by which learning rate is discounted
+  decay_step: Update eta every this-many iterations
+  clip: Minimum value eta may take
+"""
+mutable struct ExpDecay
+  eta::Float64
+  decay::Float64
+  step::Int64
+  clip::Float64
+  current::IdDict
+end
+
+ExpDecay(opt=0.001, decay=0.1, decay_step=1000, clip=1e-4) = ExpDecay(
+  opt, decay, decay_step, clip, IdDict())
+
+
+function apply!(o::ExpDecay, x, delta)
+  eta, s, decay = o.eta, o.step, o.decay
+  n = o.current[x] = get(o.current, x, 0) + 1
+  if o.current[x] % s == 0 && count(x -> x % s == 0, values(o.current)) == 1
+    eta = max(eta * decay, o.clip)
+    o.eta = eta
+  end
+  @. delta *= eta
+end
+
+
+"""
+    WeightDecay(wd=0)
+"""
