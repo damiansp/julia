@@ -94,7 +94,7 @@ Returns 1, the 'len' of a field along a reduced dim.
 
 @inline right_halo_indices(loc, topo, H) = N + 1:N + H
 @inline right_halo_indices(::Type{Face}, ::Type{Bounded}, N, H) = 
-    N + 2:N + H + 1
+  N + 2:N + H + 1
 @inline right_halo_indices(::Type{Nothing}, topo, N, H) = 1:0 # empty
 
 @inline underlying_left_halo_indices(loc, topo, N, H) = 1:H
@@ -102,7 +102,7 @@ Returns 1, the 'len' of a field along a reduced dim.
 
 @inline underlying_right_halo_indices(loc, topo, N, H) = N + H + 1:N + 2H
 @inline underlying_right_halo_indices(::Type{Face}, ::Type{Bounded}, N, H) =
-    N + H + 2:N + 2H + 1
+  N + H + 2:N + 2H + 1
 @inline underlying_right_halo_indices(::Type{Nothing}, topo, N, H) = 1:0 # empty
 
 @inline interior_indices(loc, topo, N) = 1:N
@@ -110,15 +110,15 @@ Returns 1, the 'len' of a field along a reduced dim.
 @inline interior_indices(::Type{Nothing}, topo, N) = 1:1
 
 @inline interior_x_indices(loc, grid) = interior_indices(
-    loc, topology(grid, 1), grid.Nx)
+  loc, topology(grid, 1), grid.Nx)
 @inline interior_y_indices(loc, grid) = interior_indices(
-    loc, topology(grid, 2), grid.Ny)
+  loc, topology(grid, 2), grid.Ny)
 @inline interior_z_indices(loc, grid) = interior_indices(
-    loc, topology(grid, 3), grid.Nz)
+  loc, topology(grid, 3), grid.Nz)
 
 @inline interior_parent_indices(loc, topo, N, H) = 1 + H:N + H
 @inline interior_parent_indices(::Type{Face}, ::Type{Bounded}, N, H) = 
-    1 + H:N + H + 1
+  1 + H:N + H + 1
 @inline interior_parent_indices(::Type{Nothing}, topo, N) = 1:1
 
 # All indices (including halos)
@@ -127,22 +127,22 @@ Returns 1, the 'len' of a field along a reduced dim.
 @inline all_indices(::Type{Nothing}, topo, N, H) = 1:1
 
 @inline all_x_indices(loc, grid) = all_indices(
-    loc, topology(grid, 1), grid.Nx, grid.Hx)
+  loc, topology(grid, 1), grid.Nx, grid.Hx)
 @inline all_y_indices(loc, grid) = all_indices(
-    loc, topology(grid, 2), grid.Ny, grid.Hy)
+  loc, topology(grid, 2), grid.Ny, grid.Hy)
 @inline all_z_indices(loc, grid) = all_indices(
-    loc, topology(grid, 3), grid.Nz, grid.Hz)
+  loc, topology(grid, 3), grid.Nz, grid.Hz)
 
 @inline all_parent_indices(loc, topo, N, H) = 1:N + 2H
 @inline all_parent_indices(::Type{Face}, ::Type{Bounded}, N, H) = 1:N + 2H + 1
 @inline all_parent_indices(::Type{Nothing}, topo, N, H) = 1:1
 
 @inline all_parent_x_indices(loc, grid) = all_parent_indices(
-    loc, topology(grid, 1), grid.Nx, grid.Hx)
+  loc, topology(grid, 1), grid.Nx, grid.Hx)
 @inline all_parent_y_indices(loc, grid) = all_parent_indices(
-    loc, topology(grid, 2), grid.Ny, grid.Hy)
+  loc, topology(grid, 2), grid.Ny, grid.Hy)
 @inline all_parent_z_indices(loc, grid) = all_parent_indices(
-    loc, topology(grid, 3), grid.Nz, grid.Hz)
+  loc, topology(grid, 3), grid.Nz, grid.Hz)
 
 
 # Nodes
@@ -150,11 +150,56 @@ Returns 1, the 'len' of a field along a reduced dim.
 # Node by node
 @inline xnode(::Type{Cell}, i, grid) = @inbounds grid.xC[i]
 @inline xnode(::Type{Face}, i, grid) = @inbounds grid.xF[i]
-
 @inline ynode(::Type{Cell}, j, grid) = @inbounds grid.yC[j]
 @inline ynode(::Type{Face}, j, grid) = @inbounds grid.yF[j]
-                        
 @inline znode(::Type{Cell}, k, grid) = @inbounds grid.zC[k]
 @inline znode(::Type{Face}, k, grid) = @inbounds grid.zF[k]
 
 # Convenience
+@inline xC(i, grid) = xnode(Cell, i, grid)
+@inline xF(i, grid) = xnode(Face, i, grid)
+@inline yC(j, grid) = ynode(Cell, j, grid)
+@inline yF(j, grid) = ynode(Face, j, grid)
+@inline zC(k, grid) = znode(Cell, k, grid)
+@inline zF(k, grid) = znode(Face, k, grid)
+
+all_x_nodes(::Type{Cell}, grid) = grid.xC
+all_x_nodes(::Type{Face}, grid) = grid.xF
+all_y_nodes(::Type{Cell}, grid) = grid.yC
+all_y_nodes(::Type{Face}, grid) = grid.yF
+all_z_nodes(::Type{Cell}, grid) = grid.zC
+all_z_nodes(::Type{Face}, grid) = grid.zF
+
+
+"""
+    xnodes(loc, grid, reshape=false)
+Returns a view over the interior `loc=Cell` or `loc=Face` nodes on `grid` in the
+x-direction. For `Bounded` directions, `Face` nodes include the boundary points.
+`reshape=false` will return a 1D array, while `true` will return a 3D array with size Nx x 1 x 1
+"""
+function xnodes(loc, grid; reshape=false)
+  x = view(all_x_nodes(loc, grid), 
+           interior_indices(loc, topology(grid, 1), grid.Nx))
+  reshape ? Base.reshape(x, length(x), 1, 1) : x
+end
+
+
+"""
+    ynodes(loc, grid, reshape=false)
+Returns a view over the interior `loc=Cell` or `loc=Face` nodes on `grid` in the
+y-direction. For `Bounded` directions, `Face` nodes include the boundary points.
+`reshape=false` will return a 1D array, while `true` will return a 3D array with size 1 x Ny x 1
+"""
+function ynodes(loc, grid; reshape=false)
+  y = view(all_y_nodes(loc, grid), 
+           interior_indices(loc, topology(grid, 2), grid.Ny))
+  reshape ? Base.reshape(y, 1, , length(y), 1) : y
+end
+
+
+"""
+    znodes(loc, grid, reshape=false)
+Returns a view over the interior `loc=Cell` or `loc=Face` nodes on `grid` in the
+z-direction. For `Bounded` directions, `Face` nodes include the boundary points.
+`reshape=false` will return a 1D array, while `true` will return a 3D array with size 1 x 1 x Nz
+"""
