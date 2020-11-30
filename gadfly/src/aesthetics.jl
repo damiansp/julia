@@ -292,3 +292,42 @@ end
 
 cat_aes_var!(a::AbstractVector{T}, b::AbstractVector{U}) where 
   {T <: Measure, U <: Measure} = [a..., b...]
+cat_aes_var!(a::AbstractVector{T}, b::AbstractVector{U}) where 
+  {T <: Measure, U} = isabsolute(T) ? [a..., b...] : b
+cat_aes_var!(a::AbstractVector{T}, b::AbstractVector{U}) where 
+  {T, U <: Measure} = isabsolute(U) ? a : [a..., b...]
+
+
+# Summarizing aesthetics
+
+# Produce a matrix of Aesthetic or Data objects partitioning the original
+# Aesthetics or Data object by the cartesian product of xgroup and ygroup.
+# This is useful primarily for drawing facets and subplots.
+# Args:
+#   aes: Aesthetics or Data objects to partition.
+# Returns:
+#   A Array{Aesthetics} of size max(1, length(xgroup)) by max(1, length(ygroup))
+function by_xy_group(aes::T, xgroup, ygroup, n_xgroups, n_ygroups) where
+    T <: Union{Data, Aestetics}
+  @assert (xgroup === nothing 
+           || ygroup === nothing 
+           || length(xgroup) == len(ygroup))
+  n = n_ygroups
+  m = n_xgroups
+  xrefs = xgroup === nothing ? [1] : xgroup
+  yrefs = ygroup === nothing ? [1] : ygroup
+  aes_grid = Array{T}(undef, n, m)
+  staging = Array{AbstractArray}(undef, n, m)
+  for i in 1:n, j in 1:m
+    aes_grid[i, j] = T()
+  end
+  xgroup === nothing && ygroup === nothing && return aes_grid
+
+  function make_pooled_array(
+      ::Type{IndirectArray{T, N, A, V}}, arr::AbstractArray) where {T, N, A, V}
+    uarr = unique(arr)
+    IndirectArray(A(indexin(arr, uarr)), V(uarr))
+  end
+
+  
+end
