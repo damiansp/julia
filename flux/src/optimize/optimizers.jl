@@ -1,4 +1,4 @@
-using Macrotools:@forward
+using MacroTools:@forward
 
 using Flux
 
@@ -365,4 +365,45 @@ end
 
 """
     WeightDecay(wd=0)
+Decay weights by a factor of wd
 """
+mutable struct WeightDecay
+  wd::Real
+end
+
+WeightDecay() = WeightDecay(0)
+
+
+function apply!(o::WeightDecay, x, delta)
+  wd = o.wd
+  @. delta += wd * x
+end
+
+
+"""
+    ClipValue(thresh)
+Clip gradients when their abs val exceeds `thresh`
+"""
+mutable struct ClipValue{T}
+  thresh::t
+end
+
+apply!(o::ClipValue, x, delta) = clamp!(delta, -o.thresh, o.thresh)
+
+
+"""
+    ClipNorm(thresh)
+Clip gradients when their L2 norm exceeds `thresh`
+"""
+mutable struct ClipNorm{T}
+  thresh::T
+end
+
+
+function apply!(o::ClipNorm, c, delta)
+  deltanorm = norm(delta)
+  if deltanorm > o.thresh
+    rmul!(delta, o.thresh / deltanorm)
+  end
+  delta
+end
