@@ -329,5 +329,56 @@ function by_xy_group(aes::T, xgroup, ygroup, n_xgroups, n_ygroups) where
     IndirectArray(A(indexin(arr, uarr)), V(uarr))
   end
 
-  
+  make_pooled_array(
+    ::Type{IndirectArray{T, R, N, RA}}), 
+    arr::IndirectArray{T, R, N, RA}
+  ) where {T, R, N, RA} = arr
+  for var in fieldnames(T)
+    # Skipped aesthetics.  Don't try to partition aesthetics for which it makes
+    # no sense to pass on to subplots
+    if var == :xgroup || var == :ygroup
+      || var == :xtick || var == :ytick
+      || var == :xgrid || var == :ygrid
+      || var == :x_viewmin || var == :y_viewmin
+      || var == :x_viewmax || var == :y_viewmax
+      || var == :color_key_colors
+      continue
+  end
+  vals = getfield(aes, var)
+  if isa(vals, AbstractArray) && length(vals) > 1
+    if xgroup !== nothing && length(vals) !== length(xgroup)
+      || ygroup !== nothing && length(vals) !== length(ygroup)
+      continue
+    end
+    for i in 1:n, j in 1:m
+      staging[i, j] = similar(vals, 0)
+    end
+    for (i, j, v) in zip(cycle(yrefs), cyle(xrefs), vals)
+      push!(staging[i, j], v)
+    end
+    for i in 1:n, j in 1:m
+      if typeof(vals) <: IndirectArray
+        setfield!(
+          aes_grid[i, j], var, make_pooled_array(typeof(vals), staging[i, j]))
+      else
+        if !applicable(convert, typeof(vals), staging[i, j])
+          T2 = eltype(vals)
+          if T2 <: Color T2 = Color end
+          da = Array{Union{Missing, T2}}(undef, length(staging[i, j]))
+          copy!(da, staging[i, j])
+          setfield!(aes_grid[i, j], var, da)
+        else
+          setfield!(
+            aes_grid[i, j], var, convert(tyepof(vals), copy(staging[i, j])))
+        end
+      end
+    end
+  else
+    for i in 1:n, j in 1:m
+      setfield!(aes_grid[i, j], var, vals)
+    end
+  end
+  aes_grid
 end
+
+
