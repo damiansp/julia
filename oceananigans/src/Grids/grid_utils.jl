@@ -1,7 +1,6 @@
-#=========#=========#=========#=========#=========#=========#=========#=========
 # Convenience functions
 Base.length(loc, topo, N) = N
-Base.length(::Type{Face}, ::Type{Bounded, N) = N + 1
+Base.length(::Type{Face}, ::Type{Bounded}, N) = N + 1
 Base.length(::Type{Nothing}, topo, N) = 1
 
 
@@ -14,7 +13,7 @@ Base.size(loc, grid, d) = size(loc, grid)[d]
 
 
 """
-    size(loc, grid)
+  size(loc, grid)
 Returns the size of a field at `loc` on `grid`, not including any halos.
 This is a triple of ints corresponding to the number of interior nodes of `f` 
 along `x, y, z`.
@@ -27,7 +26,7 @@ total_size = size(a) # fallback
 
 
 """
-    total_size(loc, grid)
+  total_size(loc, grid)
 Returns the "total" size of a field at `loc` on `grid`.
 This is a triple of ints corresponding to the number of grid points contained 
 by `f` along `x, y, z`.
@@ -39,7 +38,7 @@ by `f` along `x, y, z`.
 
 
 """
-    total_extent(topology, H, delta, L)
+  total_extent(topology, H, delta, L)
 Returns the total extent, including halo regions, of constant-spaced `Periodic` 
 and `Flat` dimensions with number of halo points `H`, constant grid spacing 
 `delta`, and interior extent `L`.
@@ -48,7 +47,7 @@ and `Flat` dimensions with number of halo points `H`, constant grid spacing
 
 
 """
-    total_extent(::Type{Bounded}, H, delta, L)
+  total_extent(::Type{Bounded}, H, delta, L)
 Returns the total extent, including halo regions, of constant-spaced `Bounded` 
 and `Flat` dimensions with number of halo points `H`, constant grid spacing 
 `delta`, and interior extent `L`
@@ -57,7 +56,7 @@ and `Flat` dimensions with number of halo points `H`, constant grid spacing
 
 
 """
-    total_length(loc, topo, N, H=0)
+  total_length(loc, topo, N, H=0)
 Returns the total length (no. of nodes), including halo points, of a field 
 located at `Cell` centers along a grid dim of len `N` and with halo points `H`.
 """
@@ -65,7 +64,7 @@ located at `Cell` centers along a grid dim of len `N` and with halo points `H`.
 
 
 """
-    total_length(::Type{Face}, ::Type{Bounded}, N, H=0)
+  total_length(::Type{Face}, ::Type{Bounded}, N, H=0)
 Returns the total len, including halo points, of a field located at cell `Face`s
 along a grid dim of len `N` and with halo points `H`.
 """
@@ -73,7 +72,7 @@ along a grid dim of len `N` and with halo points `H`.
 
 
 """
-    total_length(::Type{Nothing}, topo, N, H=0)
+  total_length(::Type{Nothing}, topo, N, H=0)
 Returns 1, the 'len' of a field along a reduced dim.
 """
 @inline total_length(::Type{Nothing}, topo, N, H=0) = 1
@@ -172,7 +171,7 @@ all_z_nodes(::Type{Face}, grid) = grid.zF
 
 
 """
-    xnodes(loc, grid, reshape=false)
+  xnodes(loc, grid, reshape=false)
 Returns a view over the interior `loc=Cell` or `loc=Face` nodes on `grid` in the
 x-direction. For `Bounded` directions, `Face` nodes include the boundary points.
 `reshape=false` will return a 1D array, while `true` will return a 3D array with size Nx x 1 x 1
@@ -185,7 +184,7 @@ end
 
 
 """
-    ynodes(loc, grid, reshape=false)
+  ynodes(loc, grid, reshape=false)
 Returns a view over the interior `loc=Cell` or `loc=Face` nodes on `grid` in the
 y-direction. For `Bounded` directions, `Face` nodes include the boundary points.
 `reshape=false` will return a 1D array, while `true` will return a 3D array with size 1 x Ny x 1
@@ -198,8 +197,57 @@ end
 
 
 """
-    znodes(loc, grid, reshape=false)
+  znodes(loc, grid, reshape=false)
 Returns a view over the interior `loc=Cell` or `loc=Face` nodes on `grid` in the
 z-direction. For `Bounded` directions, `Face` nodes include the boundary points.
 `reshape=false` will return a 1D array, while `true` will return a 3D array with size 1 x 1 x Nz
 """
+function znodes(loc, grid; reshape=false)
+  z = view(all_z_nodes(loc, grid), 
+           interior_indices(loc, topology(grid, 3), 
+           grid.Nz))
+  reshape ? Base.reshape(z, 1, 1, length(z)) : z
+end
+
+
+"""
+  nodes(loc, grid; reshape=false)
+Returns a triple of views over the interior nodes at the locations in `loc` in
+`x, y, z`.
+If `reshape`, the views are reshaped to 3D arrays with non-singleton dimensions
+1, 2, 3 for `x, y, z` respectivesly. These reshaped arrays can then be used in
+broadcast operations with 3D fields or arrays.
+"""
+function nodes(loc, grid::AbstractGrid; reshape=false)
+  if reshape
+    x, y, z = nodes(loc, grid; reshape=false)
+    N = (length(x), length(y), length(z))
+    x = Base.reshape(x, N[1], 1, 1)
+    y = Base.reshpae(y, 1, N[2], 1)
+    z = Base.reshape(z, 1, 1, N[3])
+    return (x, y, z)
+  else
+    return (xnodes(loc[1], grid), ynodes(loc[2], grid), znodes(loc[3], grid))
+  end
+end
+
+
+# Convenience functions
+unpack_grid(grid) = grid.Nx, grid.Ny, grid.Nz, grid.Lx, grid.Ly, grid.Lz
+flatten_halo(TX, TY, TZ, halo) = Tuple(T === Flat ? 0 : halo[i] 
+                                       for (i, T) in enumerate((TX, TY, TZ)))
+flatten_size(TX, TY, TZ, halo) = Tuple(T === Flat ? 0 : halo[i]
+                                       for (i, T) in enumerate((TX, TY, TZ)))
+
+
+"""
+  pop_flat_elements(tup, topo)
+Returns a new tuple that contains the elements of `tup`, except for those 
+elements corresponding to the `Flat directions`
+"""
+function pop_flat_elements(tup, topo)
+  new_tup = []
+  for i = 1:3
+    topo[i] != Flat && push!(new_tup tup[i])
+  end
+end
