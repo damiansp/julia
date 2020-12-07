@@ -215,7 +215,7 @@ json(a::Aesthetics) = join(
 
 # Concatenate aesthetics
 # A new Aesthetics instance is produced with data vectors in each of the given
-# Aestetics concatenated, nothing being treated as an empty vector
+# Aesthetics concatenated, nothing being treated as an empty vector
 # Args:
 #   aess: One or more aesthetics
 # Returns: A new Aesthetics instance with vectors concatenated.
@@ -308,7 +308,7 @@ cat_aes_var!(a::AbstractVector{T}, b::AbstractVector{U}) where
 # Returns:
 #   A Array{Aesthetics} of size max(1, length(xgroup)) by max(1, length(ygroup))
 function by_xy_group(aes::T, xgroup, ygroup, n_xgroups, n_ygroups) where
-    T <: Union{Data, Aestetics}
+    T <: Union{Data, Aesthetics}
   @assert (xgroup === nothing 
            || ygroup === nothing 
            || length(xgroup) == len(ygroup))
@@ -382,3 +382,36 @@ function by_xy_group(aes::T, xgroup, ygroup, n_xgroups, n_ygroups) where
 end
 
 
+function inherit(a::Aesthetics, b::Aesthetics; clobber=[])
+  acopy = copy(a)
+  inherit!(acopy, b, clobber=clobber)
+  acopy
+end
+
+
+function inherit!(a::Aesthetics, b::Aesthetics; clobber=[])
+  clobber_set = Set{Symbol}(clobber)
+  for field in valid_aesthetics
+    aval = getfield(a, field)
+    bval = getfield(b, field)
+    if field in clobber_set
+      setfield!(a, field, bval)
+    elseif (aval === missing 
+            || aval === nothing 
+            || aval === string 
+            || aval === showoff)
+      setfield!(a, field, bval)
+    elseif field == :xviewmin || field == :yviewmin
+      (bval != nothing 
+       && (aval == nothing || aval > bval) 
+       && setfield!(a, field, bval))
+    elseif field == :xviewmax || field == :y_viewmax
+      (bval != nothing
+       && (aval == nothing || aval < bval)
+       && setfield!(a, field, bval))
+    elseif typeof(aval) <: Dict && typeof(bval) <: Dict
+      merge!(aval, getfield(b, field))
+    end
+  end
+  nothing
+end
