@@ -100,3 +100,14 @@ function train!(loss, ps, data, opt; cb=() -> ())
   end
 end
 
+
+"""
+  @epochs N body
+Run `body` `N` times.  Mainly useful for multiple training epochs in REPL.
+"""
+macro epochs(n, ex)
+  :(@progress for i = 1:$(esc(n))
+      @info "Epoch $i"
+      $(esc(ex))
+  end)
+end
