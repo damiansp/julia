@@ -57,6 +57,58 @@ function validate_size(TX, TY, TZ, size)
 end
 
 
-function valideate_halo()
-  # TODO
+function validate_halo(TX, TY, TZ, halo)
+  halo = tupleit(halo)
+  validate_tupled_argument(
+    halo, Integer, "halo", topological_tuple_length(TX, TY, TZ))
+  inflate_tuple(TX, TY, TZ, halo, default=0)
+end
+
+
+coordinate_name(i) = i == 1 ? "x" : i == 2 ? "y" : "z"
+
+
+function validate_dimension_specification(T, xi, dir)
+  isnothing(xi) && throw(
+    ArgumentError(
+      "Must supply extent or $dir keyword when $dir-direction is $T."))
+  length(xi) == 2 || throw(ArgumentError("$dir length($xi) must be 2."))
+  all(isa.(xi, Number)) || throw(
+    ArgumentError("$dir=$xi should contain numbers."))
+  xi[2] >= xi[1] || throw(
+    ArgumentError("$dir=$xi should be an increasing interval"))
+end
+
+validate_dimension_specification(::Type{Flat}, xi::Tuple, dir) = xi
+validate_dimension_specification(::Type{Flat}, ::Nothing, dir) = (0, 0)
+validate_dimension_specification(::Type{Flat}, xi::Number, dir) = (xi, xi)
+
+
+default_horizontal_extent(T, extent) = (0, extent[i])
+default_vertical_extent(T, extent) = (-extent[3], 0)
+
+
+function validate_regular_grid_domain(TX, TY, TZ, FT, extent, x, y, z)
+  # Find domain endpoints or extent, according to user input
+  if !isnothing(extent) # user has specified extent
+    (!isnothing(x) || !isnothing(y) || !isnothing(z)) && throw(
+      ArgumentError(
+        "Cannot specify both 'extent' and 'x, y, z' keyword arguments."))
+    extent = tupleit(extent)
+    validate_tupled_argument(
+      extent, Number, "extent", topological_tuple_length(TX, TY, TZ))
+    Lx, Ly, Lz = extent = inflate_tuple(TX, TY, TZ, extent, default=0)
+
+    # An "oceanic" default domain:
+    x = (0, Lx)
+    y = (0, Ly)
+    z = (-Lz, 0)
+  else 
+    x = validate_dimension_specification(TX, x, :x)
+    y = validate_dimension_specification(TY, y, :y)
+    z = validate_dimension_specification(TZ, z, :z)
+    Lx = x[2] - x[1]
+    Ly = y[2] - y[1]
+  end
+  FT(Lx), FT(Ly), FT(Lz), FT.(x), FT.(y), FT.(z)
 end
