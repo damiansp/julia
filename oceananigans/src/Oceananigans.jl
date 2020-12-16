@@ -7,10 +7,11 @@ end
 
 
 export
+  # Grids
+  RegularCartesianGrid
 
 
-# Placeholder functions
-function tupleit end
-
+# Inclde all submodules
+include("Grids/Grids.jl")
 
 end
