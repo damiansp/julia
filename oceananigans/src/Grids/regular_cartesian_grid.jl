@@ -80,5 +80,40 @@ Grid properties
 function RegularCartesianGrid(
     FT=Float64; size, x=nothing, y=nothing, z=nothing, extent=nothing,
     topology=(Periodic, Periodic, Bounded), halo=nothing)
-  
+  TX, TY, TZ = validate_topology(topology)
+  size = validate_size(TX, TY, TZ, size)
+  halo = validate_halo(TX, TY, TZ, halo)
+  Lx, Ly, Lz, x, y, z = validate_regular_grid_domain(
+    TX, TY, TZ, FT, extent, x, y, z)
+  # Un/packing
+  Nx, Ny, Nz = N = size
+  Hx, Hy, Hz = H = halo
+  L = (Lx, Ly, Lz)
+  dx, dy, xz = delta = L ./ N
+  X1 = (x[1], y[1], z[1])
+  # Face-node limits in x, y, z
+  xFneg, yFneg, zFneg = XFneg = @. X1 - H*delta
+  xFpos, yFpos, zFpos = XFpos = (@. XFneg 
+                                 + total_extent(topology, halo, delta, L))
+  # Cell-node limits in x, y, z
+  xCneg, yCneg, zCneg = XCneg = @. XFneg + delta / 2
+  xCpos, yCpos, zCpos = XCpos = @. XCneg + L + delta*(2H - 1)
+  TFx, TFy, TFz = total_length.(Face, topology, N, H)
+  TCx, TCy, TCz = total_length.(Cell, topology, N, H)
+  # Include halo points in coordinate arrays
+  xF = range(xFneg, xFpos; length=TFx)
+  yF = range(yFneg, yFpos; length=TFy)
+  zF = range(zFneg, zFpos; length=TFz)
+  xC = range(xCneg, xCpos; length=TCx)
+  yC = range(yCneg, yCpos; length=TCy)
+  zC = range(zCneg, zCpos; length=TCz)
+  # Offset
+  xF = OffsetArray(xF, -Hx)
+  yF = OffsetArray(yF, -Hy)
+  zF = OffsetArray(zF, -Hz)
+  xC = OffsetArray(xC, -Hx)
+  yC = OffsetArray(yC, -Hy)
+  zC = OffsetArray(zC, -Hz)
+  RegularCartesianGrid{FT, TX, TY, TZ, typeof(xC)}(
+    Nx, Ny, Nz, Hx, Hy, Hz, Lx, Ly, Lz, dx, dy, dz, xC, yC, zC, xF, yF, zF)
 end

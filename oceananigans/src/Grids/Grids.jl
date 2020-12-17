@@ -2,7 +2,11 @@ module Grids
 
 
 export
-  RegularCartesianGrid
+  AbstractGrid, RegularCartesianGrid
 
 
-end
+
+include("regular_cartesian_grid.jl")
+
+
+end # module
