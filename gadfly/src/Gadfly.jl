@@ -4,6 +4,38 @@ module Gadfly
 export plot
 
 
+abstract type Element end
+abstract type ScaleElement <: Element end
+abstract type CoordinateElement <: Element end
+abstract type GeometryElement <: Element end
+abstract type GuideElement <: Element end
+abstract type StatisticElement <: Element end
+
+
+include("theme.jl")
+
+# A plot has 0 or more layers. Layers have a particular geometry and their own
+# data, which is inherited from the plot if not given
+mutable struct Layer <: Element
+  data_source
+  mapping::Dict
+  statistics::Vector{StatisticElement}
+  geom::GeometryElement
+  theme::Union{Nothing, Theme}
+  order::Int
+end
+
+Layer() = Layer(nothing, Dict(), StatisticElement[], Geom.nil(), nothing, 0)
+Layer(l::Layer) = Layer(
+  l.data_source, l.mapping, l.statistics, l.geom, l.theme, l.order)
+copy(l::Layer) = Layer(l)
+
+
+# b/c a call to layer() expands a vector of layers (one for each Geom supplied),
+# we need to allow Vector{Layer} to count as an Element for the puposes of plot.
+const ElementOrFunctionOrLayers = Union{ElementOrFunction, Vector{Layers}}
+
+
 """
   plot(data_source::Union{AbstractMatrix, AbstractDataFrame},
        elements::ElementOrFunctionOrLayers...; mapping...) -> Plot
