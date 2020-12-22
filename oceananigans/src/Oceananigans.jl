@@ -14,4 +14,9 @@ export
 # Inclde all submodules
 include("Grids/Grids.jl")
 
-end
+
+# Re-export stuff from submodules
+using .Grids
+
+
+end # module
