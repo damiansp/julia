@@ -40,6 +40,36 @@ end
 
 
 """
+  label_smoothing(y::Union{Number, AbstractArray}, alpha; dims::Int=1)
+Returns smoothed labels, meaning the confidence on label values are relaxed.
+When `y` is given as one-hot vector or batch of one-hot, its calculated as
+  y .* (1 - α) .+ α / size(y, dims)
+when `y` is given as a number or batch of numbers for binary classification,
+its calculated as
+  y .* (1 - α) .+ α / 2
+in which case the labels are squeezed towards `0.5`.
+`alpha` is a number in interval (0, 1) called the smoothing factor. The higher the
+value of `alpha`, the larger the smoothing of `y`.
+`dims` denotes the one-hot dimension, unless `dims=0` which denotes the application
+of label smoothing to binary distributions encoded in a single number.
+"""
+function label_smoothing(
+    y::Union{AbstractNumber, Number}, alpha::Number; dims::Int=1)
+  if !(0 < alpha < 1)
+    throw(ArgumentError("alpha must be between 0 and 1"))
+  end
+  if dims == 0
+    y_smoothed = y .* (1 - alpha) .+ alpha * 1//2
+  elseif dims ==1
+    y_smoothed = y .* (1 - alpha) .+ alpha * 1//size(y, 1)
+  else
+    throw(ArgumentError("`dims` should be either 0 or 1"))
+  end
+  y_smoothed
+end
+
+
+"""
   crossentropy(ŷ, y; dims=1, ϵ=eps(ŷ), agg=mean)
 Return the cross entropy between the given probability distributions;
 calculated as
@@ -60,9 +90,7 @@ end
 
 """
   logitcrossentropy(ŷ, y; dims=1, agg=mean)
-Return the crossentropy computed after a [`Flux.logsoftmax`](@ref) operation;
-calculated as
-  agg(.-sum(y .* logsoftmax(ŷ; dims=dims); dims=dims))
+Return the crossentropy computed after a [`Flux.logsoftmax`](@ref) operation.
 `logitcrossentropy(ŷ, y)` is mathematically equivalent to
 [`Flux.Losses.crossentropy(softmax(ŷ), y)`](@ref) but it is more numerically stable.
 See also: [`Flux.Losses.crossentropy`](@ref), [`Flux.Losses.binarycrossentropy`](@ref), [`Flux.Losses.logitbinarycrossentropy`](@ref)
@@ -74,8 +102,7 @@ end
 
 """
   binarycrossentropy(ŷ, y; agg=mean, ϵ=eps(ŷ))
-Return the binary cross-entropy loss, computed as
-  agg(@.(-y*log(ŷ + ϵ) - (1-y)*log(1-ŷ + ϵ)))
+Return the binary cross-entropy loss.
 The `ϵ` term provides numerical stability.
 Typically, the prediction `ŷ` is given by the output of a [`sigmoid`](@ref) activation.
 Use of `logitbinarycrossentropy` is recomended over `binarycrossentropy` for numerical stability.
@@ -84,3 +111,5 @@ See also: [`Flux.Losses.crossentropy`](@ref), [`Flux.Losses.logitcrossentropy`](
 function binarycrossentropy(yhat, y; agg=mean, epsilon=epseltype(yhat))
   agg(@.(-xlogy(y, yhat + epsilon) - xlogy(1 - y, 1 - yhat + epsilon)))
 end
+
+
