@@ -12,6 +12,7 @@ abstract type GuideElement <: Element end
 abstract type StatisticElement <: Element end
 
 
+include("varset.jl")
 include("theme.jl")
 
 # A plot has 0 or more layers. Layers have a particular geometry and their own

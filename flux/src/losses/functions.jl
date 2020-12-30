@@ -113,3 +113,58 @@ function binarycrossentropy(yhat, y; agg=mean, epsilon=epseltype(yhat))
 end
 
 
+"""
+  logitbinarycrossentropy(ŷ, y; agg=mean)
+Mathematically equivalent to
+[`binarycrossentropy(σ(ŷ), y)`](@ref) but is more numerically stable.
+Use [`label_smoothing`](@ref) to smooth the `y` value as preprocessing before
+computing the loss.
+See also: [`crossentropy`](@ref), [`logitcrossentropy`](@ref), [`binarycrossentropy`](@ref), [`label_smoothing`](@ref)
+"""
+function logitbinarycrossentropy(yhat, y; agg=mean)
+  agg(@.((1 - y)*yhat - logsigma(yhat)))
+end
+
+
+"""
+  kldivergence(ŷ, y; agg=mean)
+Return the
+[Kullback-Leibler divergence](https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence)
+between the given probability distributions.
+KL divergence is a measure of how much one probability distribution is different
+from the other.
+It is always non-negative and zero only when both the distributions are equal
+everywhere.
+"""
+function kldivergence(yhat, y; dims=1, agg=mean, epsilon=epseltype(yhat))
+  entropy = agg(sum(xlogx.(y), dims=dims))
+  cross_entropy = crossentropy(yhat, y; dims=dims, agg=agg, epsilon=epsilon)
+  entropy + cross_entropy
+end
+
+
+"""
+  poisson_loss(ŷ, y)
+Return how much the predicted distribution `ŷ` diverges from the expected Poisson distribution `y`; calculated as `sum(ŷ .- y .* log.(ŷ)) / size(y, 2)`.
+REDO
+[More information.](https://peltarion.com/knowledge-center/documentation/modeling-view/build-an-ai-model/loss-functions/poisson_loss).  
+"""
+poisson_loss(yhat, y; agg=mean) = agg(yhat .- xlogy.(y, yhat))
+
+
+"""
+  hinge_loss(ŷ, y; agg=mean)
+Return the [hinge_loss loss](https://en.wikipedia.org/wiki/Hinge_loss) given the
+prediction `ŷ` and true labels `y` (containing 1 or -1); calculated as
+`sum(max.(0, 1 .- ŷ .* y)) / size(y, 2)`.
+See also: [`squared_hinge_loss`](@ref)
+"""
+hinge_loss(yhat, y; agg=mean) = agg(max.(0, 1 .- yhat .* y))
+
+
+"""
+  squared_hinge_loss(ŷ, y)
+Return the squared hinge_loss loss given the prediction `ŷ` and true labels `y`
+(containing 1 or -1); calculated as `sum((max.(0, 1 .- ŷ .* y)).^2) / size(y, 2)`.
+See also: [`hinge_loss`](@ref)
+"""
