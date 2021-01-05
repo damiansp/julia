@@ -168,3 +168,28 @@ Return the squared hinge_loss loss given the prediction `ŷ` and true labels `y
 (containing 1 or -1); calculated as `sum((max.(0, 1 .- ŷ .* y)).^2) / size(y, 2)`.
 See also: [`hinge_loss`](@ref)
 """
+squared_hinge_loss(yhat, y; agg=mean) = agg((max.(0, 1 .- yhat .* y)).^2)
+
+
+"""
+  dice_coeff_loss(ŷ, y; smooth=1)
+Return a loss based on the dice coefficient.
+Used in the [V-Net](https://arxiv.org/abs/1606.04797) image segmentation
+architecture.
+"""
+dice_coef_loss(yhat, y; smooth=ofeltype(yhat, 1.0)) = (
+  1 - (2*sum(y .* yhat) + smooth) / (sum(y.^2) + sum(yhat.^2) + smooth))
+
+
+
+"""
+  tversky_loss(ŷ, y; β=0.7)
+Return the [Tversky loss](https://arxiv.org/abs/1706.05721).
+Used with imbalanced data to give more weight to false negatives.
+Larger β weigh recall more than precision (by placing more emphasis on false negatives)
+"""
+function tversky_loss(yhat, y; beta=ofeltype(yhat, 0.7))
+  num = sum(y .* yhat) + 1
+  den = sum(y .* yhat + beta*(1 .- y) .* yhat + (1 - beta)*y .* (1 .- yhat)) + 1
+  1 - num/den
+end
