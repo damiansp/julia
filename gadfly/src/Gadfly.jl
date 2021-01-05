@@ -1,8 +1,13 @@
 module Gadfly
 
 
+using Colors
+using DataStructures
+
 export plot
 
+
+const ColorOrNothing = Union{Colorant, (Nothing)}
 
 abstract type Element end
 abstract type ScaleElement <: Element end
@@ -13,7 +18,14 @@ abstract type StatisticElement <: Element end
 
 
 include("varset.jl")
+include("data.jl")
 include("theme.jl")
+
+
+# The layer and plot functions can also take functions that are evaluated with 
+# no args and are expected to produce an element.
+const ElementOrFunction{T <: Element} = Union{Element, Base.Callable, Theme}
+
 
 # A plot has 0 or more layers. Layers have a particular geometry and their own
 # data, which is inherited from the plot if not given
@@ -34,7 +46,24 @@ copy(l::Layer) = Layer(l)
 
 # b/c a call to layer() expands a vector of layers (one for each Geom supplied),
 # we need to allow Vector{Layer} to count as an Element for the puposes of plot.
-const ElementOrFunctionOrLayers = Union{ElementOrFunction, Vector{Layers}}
+const ElementOrFunctionOrLayers = Union{ElementOrFunction, Vector{Layer}}
+
+
+# Full plot spec
+mutable struct Plot
+  layers::Vector{Layer}
+  data_source
+  data::Data
+  scales::Vector{ScaleElement}
+  statistics::Vector{StatisticElement}
+  coord::Union{Nothing, CoordinateElement}
+  guides::Vector{GuideElement}
+  theme::Theme
+  mapping::Dict
+end
+
+Plot() = Plot(
+    Layer[], nothing, Data(), ScaleElement[], StatisticElement[], nothing, GuideElement[], current_theme(), Dict())
 
 
 """
@@ -85,5 +114,8 @@ function plot(
   p
 end
 
+
+# main:
+plot(y=[0, 1, 4, 9, 16, 25])
 
 end # module

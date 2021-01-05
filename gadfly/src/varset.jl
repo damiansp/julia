@@ -11,6 +11,8 @@ macro varset(name::Symbol, table)
   parsed_vars = Any[]
   parameters = Any[]
   parameters_expr = Expr(:parameters)
+  inherit_parameters = Any[]
+  inherit_parameters_expr = Expr(:parameters)
   for row in table
     isa(row, LineNumberNode) && continue
     hasdocstr = false
