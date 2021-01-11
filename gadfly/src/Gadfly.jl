@@ -4,7 +4,7 @@ module Gadfly
 using Colors
 using DataStructures
 
-export plot
+export Col, plot
 
 
 const ColorOrNothing = Union{Colorant, (Nothing)}
@@ -17,8 +17,11 @@ abstract type GuideElement <: Element end
 abstract type StatisticElement <: Element end
 
 
+# ordering of includes matters!
 include("varset.jl")
 include("data.jl")
+include("aesthetics.jl")
+include("mapping.jl")
 include("theme.jl")
 
 
