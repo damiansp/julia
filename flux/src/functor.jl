@@ -47,3 +47,40 @@ function params!(p::Params, x, seen=IdSet())
     params!(p, child, seen)
   end
 end
+
+
+function params(m...)
+  ps = Params()
+  params!(ps, m)
+  ps
+end
+
+
+function loadparams!(m, xs)
+  for (p, x) in zip(params(m), xs)
+    size(p) == size(x) || error(
+      "Expected param size $(size(p)), got  $size(x))")
+    copyto!(p, x)
+  end
+end
+
+
+# CPU/GPU movement conveniences
+cpu(m) = fmap(x -> adapt(Array, x), m)
+
+gpu(x) = use_cuda[] ? fmap(CUDA.cu, x) : x
+
+
+# Precision
+adapt_storage(T::Type{<:Real}, xs::AbstractArray{<:Real}) = convert.(T, xs)
+
+paramtype(T::Type{<:Real}, m) = fmap(x -> adapt(T, x), m)
+
+f32(m) = paramtype(Float32, m)
+
+f64(m) = paramtype(Float64, m)
+
+
+# Functors for specifici Julia data structures
+@functor Cholesky
+trainable(c::Cholesky) = ()
