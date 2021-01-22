@@ -75,3 +75,37 @@ Base.reshape(x::OneHotArray{<:Any, L} dims::Dims) where L = (
   : throw(
     ArgumentError("Cannot reshape OneHotArray if first(dims) != size(x, 1)")))
 Base._reshape(x::OneHotArray, dims::Tuple{Vararg{Int}}) = reshape(x, dims)
+
+
+batch(xs::AbstractArray{<:OneHotVector{<:Any, L}}) where L = OneHotArray(
+  _indices.(xs), L)
+
+
+Adapt.adapt_sructure(T, x::OneHotArray{<:Any, L}) where L = OneHotArray(
+  adapt(T, x.indices), L)
+
+
+Base.BroadcastStyle(
+  ::Type{<:OneHotAray{Any, <:Any, <:Any, N, <:CuArray}}
+) where N = CUDA.CuArrayStyle{N}()
+
+Base.argmax(x::OneHotAray; dims=Colon()) = (
+  (dims == 1) 
+  ? reshape(CartesianIndex.(x.indices, CartesianIndices(x.indices)), 
+            1, 
+            size(x.indices)...)
+  : argmax(convert(_onehot_bool_type(x), x); dims=dims))
+
+
+"""
+  onehot(l, labels[, unk])
+Return a `OneHotVector` where only first occourence of `l` in `labels` is `1` 
+and all other elements are `0`. 
+If `l` is not found in labels and  `unk` is present, the function returns
+`onehot(unk, labels)`; otherwise the function raises an error.
+"""
+function onehot(l, labels)
+  i = something(findfirst(isequal(l), labels), 0)
+  i > 0 || error("Value $l is not in labels")
+  OneHotVector{UInt32, length(labels)}(i)
+end
