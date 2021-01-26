@@ -109,3 +109,48 @@ function onehot(l, labels)
   i > 0 || error("Value $l is not in labels")
   OneHotVector{UInt32, length(labels)}(i)
 end
+
+function onehot(l, labels, unk)
+  i = something(findfirst(isequal(l), labels), 0)
+  i > 0 || return onehot(unk, labels)
+  OneHotVector{UInt32, length(labels)}(i)
+end
+
+
+"""
+  obehotbatch(ls, labels[, unk...])
+Return a `OneHotMatrix` where `k`th column of the matrix is 
+`onehot(ls[k], labels)`.
+If one of the input labels `ls` is not found in `labels` and `unk` is given,
+return [`onehot(unk, labels)`](@ref); otherwise the function will raise an 
+error.
+"""
+onehotbatch(ls, labels, unk...) = batch([onehot(l, labels, unk...) for l in ls])
+
+
+"""
+  onecold(y[, labels=1:length(y)])
+Reverses the [`onehot`](@ref) operation.
+"""
+onecold(y::AbstractVector, labels=1:length(y)) = labels[argmax(y)]
+
+function onecold(y::AbstractArray, labels=1:size(y, 1))
+  indices = _fast_argmax(y)
+  # non-bit type cannot be handled by CUDA
+  xs = isbits(labels) ? indices : collect(indices)
+  return map(xi -> labels[xi[1]], xs)
+end
+
+
+_fast_argmax(x::AbstractArray) = dropdims(argmax(x; dims=1); dims=1)
+_fast_argmax(x::OneHotArray) = x.indices
+
+
+@nograd OneHotArray, onecold, onehot, onehotbatch
+
+
+function Base.:(*)(A::AbstractMatrix, B::OneHotArray{<:Any, L}) where L
+  size(A, 2) == L || throw(
+    DimensionMismatch(
+      "Matrix column must correspond with OneHot size: $(size(A, 2)) != $L"))
+end
