@@ -49,3 +49,26 @@ end # mod
 
 
 using .NilNumber: Nil, nil
+
+
+"""
+  outputsize(m, inputsize::Tuple; padbatch=False)
+Calculate the size of the output from model `m` given the size of the input.
+Obeys `outputsize(m, size(x)) == size(m(x))` for valid input `x`.
+`padbatch=True` is equivalent to using `(inputsize..., 1)` and returns the final
+size including this extra batch dimension.
+Should be faster than clling `size(m(x))`. Uses trivial number type, which 
+should wourk out of the box for custom layers.
+If `m` is a `Tuple` or `Vector`, its elements are applied in sequence, like
+`Chain(m...)`
+"""
+function outputsize(m, inputsizes::Tuple...; padbatch=false)
+  x = nil_input(padbatch, inputsizes...)
+  return size(m(x))
+end
+
+
+nil_input(pad::Bool, s::Tupl{Vararg{Integer}}) = (
+  pad ? fill(nil, (s..., 1)) : fill(nil, s))
+nil_input(pad::Bool, multi::Tuple{Vararg{Integer}}...) = nil_input.(pad, multi)
+nil_input(pad::Bool, tup::Tuple{Vararg{Tuple}}) = nil_input(pad, tup...)
