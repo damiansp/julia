@@ -68,7 +68,40 @@ function outputsize(m, inputsizes::Tuple...; padbatch=false)
 end
 
 
-nil_input(pad::Bool, s::Tupl{Vararg{Integer}}) = (
+nil_input(pad::Bool, s::Tuple{Vararg{Integer}}) = (
   pad ? fill(nil, (s..., 1)) : fill(nil, s))
 nil_input(pad::Bool, multi::Tuple{Vararg{Integer}}...) = nil_input.(pad, multi)
 nil_input(pad::Bool, tup::Tuple{Vararg{Tuple}}) = nil_input(pad, tup...)
+
+
+function outputsize(
+    m::Chain, inputsizes::Tuple{Vararg{Integer}}...; padbatch=false)
+  x = nil_input(padbatch, inputsizes...)
+  for (i, lay) in enumerate(m.layers)
+    try
+      x = lay(x)
+    catch err
+      str = x isa AbstractArray ? "with input of size $(size(x))" : ""
+      @error "layer $lay, index $i in Chain, gave ann error $str"
+      rethrow(err)
+    end
+  end
+  return size(x)
+end
+
+
+"""
+  outputsize(m, x_size, y_size, ...; padbatch=false)
+For model or layer `m` accepting multiple arrays as input,
+this returns `size(m((x, y, ...)))` given `size_x = size(x)`, etc
+"""
+outputsize
+
+# make tuples and vectors be like Chains
+outputsize(m::Tuple, input::Tuple...; padbatch=false) = (
+  outputsize(Chain(m...), input...; padbatch=padbatch))
+outputsize(m::AbstractVector, input::Tuple...; padbatch=false) = (
+  outputsize(Chain(m...), input...; padbatch=padbatch))
+
+# bypass statistics in normalization layers
+           
