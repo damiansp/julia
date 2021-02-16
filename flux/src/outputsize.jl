@@ -103,5 +103,30 @@ outputsize(m::Tuple, input::Tuple...; padbatch=false) = (
 outputsize(m::AbstractVector, input::Tuple...; padbatch=false) = (
   outputsize(Chain(m...), input...; padbatch=padbatch))
 
+
 # bypass statistics in normalization layers
-           
+for layer in (:LayerNorm, :BatchNorm, :InstanceNorm, :GroupNorm)
+  @eval (l::$layer)(x::AbstractArray{Nil}) = x
+end
+
+
+# fixes for layers that don't work out-of-the-box
+for (fn, Dims) in ((:conv, DenseConvDims), (:depthwiseconv, DepthwiseConvDims))
+  @eval begin
+    function NNlib.$fn(
+        a::AbstractArray{Nil}, b::AbstractArray{Nil}, dims::$Dims)
+      fill(
+        nil, NNlib.output_size(dims)..., NNlib.channels_out(dims), size(a)[end])
+    end
+
+    function NNlib.$fn(
+        a::AbstractArray{<:Real}, b::AbstractArray{Nil}, dims::$Dims)
+      NNlib.$fn(fill(nil, size(a)), b, dims)
+    end
+
+    function NNlib.$fn(
+        a::AbstractArray{Nil}, b::AbstractArray{<:Real}, dims::$Dims)
+      NNlib.$fn(a, fill(nil, size(b)), dims)
+    end
+  end
+end
