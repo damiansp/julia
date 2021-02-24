@@ -27,3 +27,27 @@ uniform distribution in the interval `[-x, x]`, where
 `x = sqrt(6 / (fan_in + fan_out))`.
 This method is described in [1] and also known as Xavier initialization.
 """
+glorot_uniform(rng::AbstractRNG, dims...) =
+  (rand(rng, Float32, dims...) .- 0.5f0) .* sqrt(24.0f0 / sum(nfan(dims...)))
+glorot_uniform(dims...) = glorot_uniform(Random.GLOBAL_RNG, dims...)
+glorot_uniform(rng::AbstractRNG) = (dims...) -> glorot_uniform(rng, dims...)
+
+
+"""
+  glorot_normal([rng=GLOBAL_RNG], dims...)
+Return an `Array` of size `dims` containing random variables taken from a normal
+distribution with mean 0 and standard deviation `sqrt(2 / (fan_in + fan_out))`.
+This method is described in [1] and also known as Xavier initialization.
+"""
+glorot_normal(rng::AbstractRNG, dims...) = (randn(rng, Float32, dims...)
+                                            .* sqrt(2.0f0 / sum(nfan(dims...))))
+glorot_normal(dims...) = glorot_normal(Random.GLOBAL_RNG, dims...)
+glorot_normal(rng::AbstractRNG) = (dims...) -> glorot_normal(rng, dims...)
+
+
+"""
+  kaiming_uniform([rng=GLOBAL_RNG], dims...; gain=sqrt(2))
+Return an `Array` of size `dims` containing random variables taken from a uniform distribution in the
+interval `[-x, x]`, where `x = gain * sqrt(3/fan_in)`.
+This method is described in [1] and also known as He initialization.
+"""
