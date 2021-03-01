@@ -51,3 +51,41 @@ Return an `Array` of size `dims` containing random variables taken from a unifor
 interval `[-x, x]`, where `x = gain * sqrt(3/fan_in)`.
 This method is described in [1] and also known as He initialization.
 """
+function kaiming_uniform(rng::AbstractRNG, dims...; gain=sqrt(2))
+  bound = Float32(sqrt(3)* gain / sqrt(first(nfan(dims...)))) # fan_in
+  (rand(rng, Float32, dims...) .- 0.5f0) .* 2bound
+end
+
+kaiming_uniform(dims...; kwargs...) = kaiming_uniform(
+  Random.GLOBAL_RNG, dims...; kwargs...)
+kaiming_uniform(rng::AbstractRNG; init_kwargs...) = (
+  (dims...; kwargs...) ->
+  kaiming_uniform(rng, dims...; init_kwargs..., kwargs...))
+
+
+"""
+  kaiming_normal([rng=GLOBAL_RNG], dims...; gain=sqrt(2))
+Return an `Array` of size `dims` containing random variables taken from a normal
+distribution with mean 0 and standard deviation `gain * sqrt(fan_in)`.
+This method is described in [1] and also known as He initialization.
+"""
+function kaiming_normal(rng::AbstractRNG, dims...; gain=sqrt(2f0))
+  std = Float32(gain / sqrt(first(nfan(dims...)))) # fan_in
+  randn(rng, Float32, dims...) .* std
+end
+
+kaiming_normal(dims...; kwargs...) = kaiming_normal(
+  Random.GLOBAL_RNG, dims...; kwargs...)
+kaiming_normal(rng::AbstractRNG; init_kwargs...) = (
+  (dims...; kwargs...) ->
+  kaiming_normal(rng, dims...; init_kwargs..., kwargs...))
+
+
+"""
+  orthogonal([rng=GLOBAL_RNG], dims...; gain=1)
+Return an `Array` of size `dims` which is a (semi) orthogonal matrix, as 
+described in [1]. 
+The input must have at least 2 dimensions.
+For `length(dims) > 2`, a `prod(dims[1:(end - 1)])` by `dims[end]` orthogonal 
+matrix is computed before reshaping it to the original dimensions.
+"""
