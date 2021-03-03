@@ -89,3 +89,29 @@ The input must have at least 2 dimensions.
 For `length(dims) > 2`, a `prod(dims[1:(end - 1)])` by `dims[end]` orthogonal 
 matrix is computed before reshaping it to the original dimensions.
 """
+function orthogonal(rng::AbstractRNG, rows::Integer, cols::Integer; gain=1)
+  mat = (
+    rows > cols
+    ? randn(rng, Float32, rows, cols)
+    : randn(rng, Float32, cols, rows))
+  Q, R = LinearAlgebra.qr(mat)
+  Q = Array(Q) * sign.(LinearAlgebra.Diagonal(R))
+  if rows < cols
+    Q = transpose(Q)
+  end
+  gain * Q
+end
+
+orthogonal(dims::Integer; kwargs...) = orthogonal(Random.GLOBAL_RNG, dims...;
+                                                  kwargs...)
+orthogonal(rng::AbstractRNG; init_kwargs...) = (
+  (dims::Integer...; kwargs...) -> orthogonal(rng, dims...;
+                                              init_kwargs..., kwargs...))
+
+"""
+  sparse_init([rng=GLOBAL_RNG], dims...; sparsity, std = 0.01)
+Return an `Array` of size `dims` where each column contains a fixed fraction of
+zero elements given by `sparsity`. Non-zero elements are normally distributed
+with a mean of zero and standard deviation `std`.
+This method is described in [1].
+"""
