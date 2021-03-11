@@ -1,21 +1,22 @@
 using JSON
 
 
-function read_local_keys(keyspath::String, env=nothing)
+function read_local_keys(keyspath::String, env::Union{String, Nothing}=nothing)
   open(keyspath, "r") do f
-    keys = JSON.parse(f)
+    global mykeys
+    mykeys = JSON.parse(f)
     if !isnothing(env)
-      keys = Dict(k => keys[k][env] for k in keys)
+      mykeys = Dict(k => mykeys[k][env] for k in keys(mykeys))
     end
   end
+  mykeys
 end
-
-
-
 
 
 # Test
 KEYS = "/Users/dsatterthwaite/config/keys.json"
 ENV = "qa"
 
-read_local_keys(KEYS, ENV)
+mykeys = read_local_keys(KEYS, ENV)
+
+
