@@ -10,6 +10,8 @@
 *.feather
 *.jld
 *.txt
+*.xls
+*.xlsx
 
 # Images
 *.pdf
