@@ -1,0 +1,42 @@
+# OS/Emacs Generated
+#-----------------------------
+.DS_Store
+*~
+
+
+# File types
+#-----------------------------
+*.csv
+*.feather
+*.jld
+*.txt
+*.xls
+*.xlsx
+
+# Images
+*.pdf
+*.png
+*.svg
+
+
+
+# Jupyter
+#-----------------------------
+.ipynb_checkpoints/
+
+
+# Julia
+#-----------------------------
+
+
+
+# Dirs
+#-----------------------------
+supplied/
+data/
+images/
+
+
+# Files
+#-----------------------------
+db_config.json
